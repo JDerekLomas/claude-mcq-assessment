@@ -1,0 +1,404 @@
+{
+  "version": "1.0.0",
+  "items": [
+    {
+      "id": "js-this-001",
+      "topic": "js-this",
+      "difficulty": "easy",
+      "stem": "What will be logged to the console?",
+      "code": "const obj = {\n  name: 'Alice',\n  greet() {\n    console.log(this.name);\n  }\n};\n\nobj.greet();",
+      "options": [
+        { "id": "A", "text": "Alice" },
+        { "id": "B", "text": "undefined" },
+        { "id": "C", "text": "An empty string" },
+        { "id": "D", "text": "ReferenceError: name is not defined" }
+      ],
+      "correct": "A",
+      "feedback": {
+        "correct": "Correct! When a method is called on an object, `this` refers to that object.",
+        "incorrect": "Not quite. When calling `obj.greet()`, the `this` inside `greet` refers to `obj`.",
+        "explanation": "In JavaScript, when a function is called as a method of an object (using dot notation), `this` is bound to the object before the dot. Here, `obj.greet()` means `this` is `obj`, so `this.name` is 'Alice'."
+      }
+    },
+    {
+      "id": "js-this-002",
+      "topic": "js-this",
+      "difficulty": "medium",
+      "stem": "What will be logged to the console?",
+      "code": "const obj = {\n  name: 'Alice',\n  greet() {\n    console.log(this.name);\n  }\n};\n\nconst greet = obj.greet;\ngreet();",
+      "options": [
+        { "id": "A", "text": "Alice" },
+        { "id": "B", "text": "undefined" },
+        { "id": "C", "text": "TypeError: Cannot read property 'name' of undefined" },
+        { "id": "D", "text": "An empty string" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! When the method is assigned to a variable and called without context, `this` becomes the global object (or undefined in strict mode).",
+        "incorrect": "Remember: `this` is determined by how a function is called, not where it's defined.",
+        "explanation": "When you assign `obj.greet` to a variable, you're copying the function reference without the object context. Calling `greet()` without an object means `this` defaults to the global object (in non-strict mode) or `undefined` (in strict mode). Since `window.name` is typically an empty string or undefined, you get `undefined`."
+      }
+    },
+    {
+      "id": "js-this-003",
+      "topic": "js-this",
+      "difficulty": "hard",
+      "stem": "What will be logged to the console?",
+      "code": "const obj = {\n  name: 'Alice',\n  greet: () => {\n    console.log(this.name);\n  }\n};\n\nobj.greet();",
+      "options": [
+        { "id": "A", "text": "Alice" },
+        { "id": "B", "text": "undefined" },
+        { "id": "C", "text": "TypeError: this is undefined" },
+        { "id": "D", "text": "The global window's name property (or empty string)" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! Arrow functions don't have their own `this`—they inherit it from the enclosing lexical scope.",
+        "incorrect": "Arrow functions behave differently from regular functions regarding `this`.",
+        "explanation": "Arrow functions do not have their own `this` binding. Instead, they capture `this` from the surrounding lexical scope at the time they're created. Here, the arrow function is created in the global scope (or module scope), so `this` refers to the global object or `undefined` in strict mode/modules. The fact that it's a property of `obj` doesn't matter."
+      }
+    },
+    {
+      "id": "js-closures-001",
+      "topic": "js-closures",
+      "difficulty": "easy",
+      "stem": "What will be logged to the console?",
+      "code": "function outer() {\n  const x = 10;\n  function inner() {\n    console.log(x);\n  }\n  return inner;\n}\n\nconst fn = outer();\nfn();",
+      "options": [
+        { "id": "A", "text": "10" },
+        { "id": "B", "text": "undefined" },
+        { "id": "C", "text": "ReferenceError: x is not defined" },
+        { "id": "D", "text": "null" }
+      ],
+      "correct": "A",
+      "feedback": {
+        "correct": "Correct! The inner function 'closes over' the variable x, retaining access even after outer() returns.",
+        "incorrect": "Think about what the inner function can still 'see' after outer() has finished executing.",
+        "explanation": "A closure is formed when a function is defined inside another function and references variables from the outer function's scope. Even after `outer()` returns, `inner` maintains a reference to `x` in its closure. This is fundamental to how JavaScript manages scope and memory."
+      }
+    },
+    {
+      "id": "js-closures-002",
+      "topic": "js-closures",
+      "difficulty": "medium",
+      "stem": "What will be logged to the console?",
+      "code": "for (var i = 0; i < 3; i++) {\n  setTimeout(() => console.log(i), 0);\n}",
+      "options": [
+        { "id": "A", "text": "0, 1, 2" },
+        { "id": "B", "text": "3, 3, 3" },
+        { "id": "C", "text": "undefined, undefined, undefined" },
+        { "id": "D", "text": "0, 0, 0" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! All three callbacks share the same `i` variable, which equals 3 after the loop completes.",
+        "incorrect": "Remember that `var` has function scope, not block scope, and setTimeout callbacks run after the loop.",
+        "explanation": "With `var`, there's only one `i` variable shared across all iterations. By the time the setTimeout callbacks execute (after the loop finishes), `i` has already been incremented to 3. This is the classic closure-in-a-loop gotcha. Using `let` instead of `var` would create a new `i` for each iteration."
+      }
+    },
+    {
+      "id": "js-closures-003",
+      "topic": "js-closures",
+      "difficulty": "hard",
+      "stem": "What will be logged to the console?",
+      "code": "function createCounter() {\n  let count = 0;\n  return {\n    increment: () => ++count,\n    getCount: () => count\n  };\n}\n\nconst counter1 = createCounter();\nconst counter2 = createCounter();\n\ncounter1.increment();\ncounter1.increment();\ncounter2.increment();\n\nconsole.log(counter1.getCount(), counter2.getCount());",
+      "options": [
+        { "id": "A", "text": "2 1" },
+        { "id": "B", "text": "3 3" },
+        { "id": "C", "text": "2 2" },
+        { "id": "D", "text": "1 1" }
+      ],
+      "correct": "A",
+      "feedback": {
+        "correct": "Correct! Each call to createCounter() creates a new closure with its own private `count` variable.",
+        "incorrect": "Consider: does each counter share the same `count`, or do they have separate ones?",
+        "explanation": "Each call to `createCounter()` creates a new execution context with its own `count` variable. `counter1` and `counter2` each have their own private `count` in their respective closures. This is a common pattern for creating private state in JavaScript."
+      }
+    },
+    {
+      "id": "js-async-001",
+      "topic": "js-async",
+      "difficulty": "easy",
+      "stem": "What will be logged to the console, and in what order?",
+      "code": "console.log('A');\n\nPromise.resolve().then(() => console.log('B'));\n\nconsole.log('C');",
+      "options": [
+        { "id": "A", "text": "A, B, C" },
+        { "id": "B", "text": "A, C, B" },
+        { "id": "C", "text": "B, A, C" },
+        { "id": "D", "text": "A, C (B is never logged)" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! Promise callbacks are microtasks that run after the current synchronous code completes.",
+        "incorrect": "Think about when Promise callbacks actually execute relative to synchronous code.",
+        "explanation": "JavaScript executes synchronous code first, then processes microtasks (like Promise callbacks) before moving to the next macrotask. So 'A' logs first, then 'C', then the Promise callback runs and logs 'B'."
+      }
+    },
+    {
+      "id": "js-async-002",
+      "topic": "js-async",
+      "difficulty": "medium",
+      "stem": "What will be logged to the console?",
+      "code": "async function foo() {\n  console.log('1');\n  await Promise.resolve();\n  console.log('2');\n}\n\nconsole.log('3');\nfoo();\nconsole.log('4');",
+      "options": [
+        { "id": "A", "text": "3, 1, 4, 2" },
+        { "id": "B", "text": "3, 1, 2, 4" },
+        { "id": "C", "text": "1, 2, 3, 4" },
+        { "id": "D", "text": "3, 4, 1, 2" }
+      ],
+      "correct": "A",
+      "feedback": {
+        "correct": "Correct! Code after `await` is scheduled as a microtask, while code before `await` runs synchronously.",
+        "incorrect": "Remember: an async function runs synchronously until it hits the first `await`.",
+        "explanation": "When `foo()` is called, it executes synchronously until the `await`. So '3' logs, then '1' logs (inside foo), then the await pauses foo and returns control. '4' logs, then the microtask queue processes and '2' logs. The key insight: everything before `await` is synchronous."
+      }
+    },
+    {
+      "id": "js-async-003",
+      "topic": "js-async",
+      "difficulty": "hard",
+      "stem": "What will be logged to the console?",
+      "code": "Promise.resolve()\n  .then(() => {\n    console.log('1');\n    return Promise.resolve();\n  })\n  .then(() => console.log('2'));\n\nPromise.resolve()\n  .then(() => console.log('3'))\n  .then(() => console.log('4'));",
+      "options": [
+        { "id": "A", "text": "1, 2, 3, 4" },
+        { "id": "B", "text": "1, 3, 2, 4" },
+        { "id": "C", "text": "1, 3, 4, 2" },
+        { "id": "D", "text": "3, 1, 4, 2" }
+      ],
+      "correct": "C",
+      "feedback": {
+        "correct": "Correct! Returning a Promise from a then() adds an extra microtask tick before the next then() can run.",
+        "incorrect": "The key is understanding how returning a Promise from then() affects the microtask queue.",
+        "explanation": "When a then() callback returns a Promise, the next then() in the chain must wait for that Promise to resolve, which takes an extra microtask. So: '1' logs, '3' logs (both first thens complete). Then '4' logs (second chain continues), and finally '2' logs (the returned Promise resolved, allowing the first chain to continue)."
+      }
+    },
+    {
+      "id": "js-prototypes-001",
+      "topic": "js-prototypes",
+      "difficulty": "easy",
+      "stem": "What will be logged to the console?",
+      "code": "function Animal(name) {\n  this.name = name;\n}\n\nAnimal.prototype.speak = function() {\n  return `${this.name} makes a sound`;\n};\n\nconst dog = new Animal('Rex');\nconsole.log(dog.speak());",
+      "options": [
+        { "id": "A", "text": "Rex makes a sound" },
+        { "id": "B", "text": "undefined makes a sound" },
+        { "id": "C", "text": "TypeError: dog.speak is not a function" },
+        { "id": "D", "text": "Animal makes a sound" }
+      ],
+      "correct": "A",
+      "feedback": {
+        "correct": "Correct! The `dog` instance inherits the `speak` method from Animal.prototype.",
+        "incorrect": "Remember that methods on the prototype are inherited by all instances.",
+        "explanation": "When you use `new Animal('Rex')`, JavaScript creates an object whose prototype is `Animal.prototype`. The `speak` method isn't on `dog` directly, but JavaScript finds it by following the prototype chain. When called, `this` refers to `dog`, so `this.name` is 'Rex'."
+      }
+    },
+    {
+      "id": "js-prototypes-002",
+      "topic": "js-prototypes",
+      "difficulty": "medium",
+      "stem": "What will be logged to the console?",
+      "code": "const obj = { a: 1 };\nconst child = Object.create(obj);\nchild.b = 2;\n\nconsole.log(child.a, child.hasOwnProperty('a'));",
+      "options": [
+        { "id": "A", "text": "1, true" },
+        { "id": "B", "text": "1, false" },
+        { "id": "C", "text": "undefined, false" },
+        { "id": "D", "text": "1, TypeError" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! `child` can access `a` through its prototype, but it's not its 'own' property.",
+        "incorrect": "Think about the difference between inherited properties and own properties.",
+        "explanation": "`Object.create(obj)` creates a new object with `obj` as its prototype. `child` can access `a` through the prototype chain, but `hasOwnProperty` only returns true for properties directly on the object itself, not inherited ones."
+      }
+    },
+    {
+      "id": "js-prototypes-003",
+      "topic": "js-prototypes",
+      "difficulty": "hard",
+      "stem": "What will be logged to the console?",
+      "code": "function Foo() {}\nFoo.prototype.x = 1;\n\nconst a = new Foo();\nconst b = new Foo();\n\na.x = 2;\nFoo.prototype.x = 3;\n\nconsole.log(a.x, b.x);",
+      "options": [
+        { "id": "A", "text": "2, 3" },
+        { "id": "B", "text": "2, 1" },
+        { "id": "C", "text": "3, 3" },
+        { "id": "D", "text": "2, 2" }
+      ],
+      "correct": "A",
+      "feedback": {
+        "correct": "Correct! Setting `a.x = 2` creates an own property on `a`, shadowing the prototype. `b` still reads from the prototype.",
+        "incorrect": "Consider what happens when you set a property on an instance vs. the prototype.",
+        "explanation": "When you do `a.x = 2`, JavaScript creates a new 'own' property `x` on `a`, which shadows the prototype's `x`. Now `a.x` reads from the own property (2), ignoring the prototype. But `b` has no own `x` property, so it still reads from `Foo.prototype.x`, which is now 3."
+      }
+    },
+    {
+      "id": "js-timers-001",
+      "topic": "js-timers",
+      "difficulty": "easy",
+      "stem": "What will be logged to the console, and in what order?",
+      "code": "console.log('start');\n\nsetTimeout(() => console.log('timeout'), 0);\n\nconsole.log('end');",
+      "options": [
+        { "id": "A", "text": "start, timeout, end" },
+        { "id": "B", "text": "start, end, timeout" },
+        { "id": "C", "text": "timeout, start, end" },
+        { "id": "D", "text": "start, end (timeout never fires)" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! Even with a 0ms delay, setTimeout callbacks are placed in the task queue and run after the current script.",
+        "incorrect": "Remember that setTimeout(fn, 0) doesn't mean 'run immediately'.",
+        "explanation": "setTimeout schedules a callback to run after a minimum delay, but it goes into the macrotask queue. The current synchronous code must complete before any queued tasks run. So 'start' and 'end' log first, then the event loop picks up the timeout callback."
+      }
+    },
+    {
+      "id": "js-timers-002",
+      "topic": "js-timers",
+      "difficulty": "medium",
+      "stem": "What will be logged to the console, and in what order?",
+      "code": "console.log('1');\n\nsetTimeout(() => console.log('2'), 0);\n\nPromise.resolve().then(() => console.log('3'));\n\nconsole.log('4');",
+      "options": [
+        { "id": "A", "text": "1, 4, 2, 3" },
+        { "id": "B", "text": "1, 4, 3, 2" },
+        { "id": "C", "text": "1, 2, 3, 4" },
+        { "id": "D", "text": "1, 3, 4, 2" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! Microtasks (Promise callbacks) have priority over macrotasks (setTimeout).",
+        "incorrect": "Remember the priority: synchronous code → microtasks → macrotasks.",
+        "explanation": "JavaScript processes the call stack first ('1', '4'), then drains the microtask queue (Promise callback: '3'), and finally processes the macrotask queue (setTimeout: '2'). Microtasks always run before the next macrotask."
+      }
+    },
+    {
+      "id": "js-timers-003",
+      "topic": "js-timers",
+      "difficulty": "hard",
+      "stem": "What will be logged to the console, and in what order?",
+      "code": "setTimeout(() => console.log('1'), 0);\n\nPromise.resolve()\n  .then(() => {\n    console.log('2');\n    return Promise.resolve();\n  })\n  .then(() => console.log('3'));\n\nPromise.resolve().then(() => console.log('4'));\n\nconsole.log('5');",
+      "options": [
+        { "id": "A", "text": "5, 2, 4, 3, 1" },
+        { "id": "B", "text": "5, 2, 3, 4, 1" },
+        { "id": "C", "text": "5, 4, 2, 3, 1" },
+        { "id": "D", "text": "5, 2, 4, 1, 3" }
+      ],
+      "correct": "A",
+      "feedback": {
+        "correct": "Correct! Microtasks are processed in order, but returning a Promise delays the next then() by one tick.",
+        "incorrect": "Track each microtask carefully, especially when a then() returns a Promise.",
+        "explanation": "After '5' logs synchronously, the microtask queue has two items: the first then() of each Promise chain. '2' logs, but returning Promise.resolve() delays '3'. '4' logs next. Then '3' logs (the returned Promise resolved). Finally, the macrotask '1' runs."
+      }
+    },
+    {
+      "id": "js-patterns-001",
+      "topic": "js-patterns",
+      "difficulty": "easy",
+      "stem": "What will be logged to the console?",
+      "code": "const user = { name: 'Alice', age: 30 };\nconst { name, role = 'user' } = user;\n\nconsole.log(name, role);",
+      "options": [
+        { "id": "A", "text": "Alice user" },
+        { "id": "B", "text": "Alice undefined" },
+        { "id": "C", "text": "undefined user" },
+        { "id": "D", "text": "SyntaxError" }
+      ],
+      "correct": "A",
+      "feedback": {
+        "correct": "Correct! Default values in destructuring are used when the property is undefined or missing.",
+        "incorrect": "Destructuring default values kick in when the value is undefined.",
+        "explanation": "When destructuring, you can provide default values with `=`. Since `user.name` exists, `name` is 'Alice'. Since `user.role` is undefined (missing), the default value 'user' is used for `role`."
+      }
+    },
+    {
+      "id": "js-patterns-002",
+      "topic": "js-patterns",
+      "difficulty": "medium",
+      "stem": "What will be logged to the console?",
+      "code": "const arr = [1, 2, 3];\nconst [first, ...rest] = arr;\nconst newArr = [0, ...rest];\n\nconsole.log(newArr);",
+      "options": [
+        { "id": "A", "text": "[0, 1, 2, 3]" },
+        { "id": "B", "text": "[0, 2, 3]" },
+        { "id": "C", "text": "[0, [2, 3]]" },
+        { "id": "D", "text": "[0, ...rest]" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! Rest destructuring captures remaining elements, and spread expands them into the new array.",
+        "incorrect": "Trace through each destructuring and spread operation step by step.",
+        "explanation": "First, `[first, ...rest] = arr` assigns 1 to `first` and [2, 3] to `rest`. Then `[0, ...rest]` creates a new array by spreading `rest` (which is [2, 3]) into it after 0, resulting in [0, 2, 3]."
+      }
+    },
+    {
+      "id": "js-patterns-003",
+      "topic": "js-patterns",
+      "difficulty": "hard",
+      "stem": "What will be logged to the console?",
+      "code": "const obj = {\n  a: 1,\n  b: 2,\n  get sum() {\n    return this.a + this.b;\n  }\n};\n\nconst copy = { ...obj };\ncopy.a = 10;\n\nconsole.log(obj.sum, copy.sum);",
+      "options": [
+        { "id": "A", "text": "3 12" },
+        { "id": "B", "text": "3 3" },
+        { "id": "C", "text": "12 12" },
+        { "id": "D", "text": "3 undefined" }
+      ],
+      "correct": "A",
+      "feedback": {
+        "correct": "Correct! Spread copies the getter's current value as a regular property, and each object's sum uses its own `this`.",
+        "incorrect": "Consider what happens to getters when you spread an object.",
+        "explanation": "When spreading an object, getters are invoked and their returned values are copied as plain data properties. So `copy.sum` is initially set to 3 (the result of obj.sum at copy time). Wait—actually, the spread does copy the getter as well! Each `sum` getter uses `this.a + this.b` where `this` refers to the object it's called on. So `obj.sum` is 1+2=3, and `copy.sum` is 10+2=12."
+      }
+    },
+    {
+      "id": "html-events-001",
+      "topic": "html-events",
+      "difficulty": "easy",
+      "stem": "Given this HTML structure, which element's click handler runs first?",
+      "code": "<div id=\"outer\">\n  <button id=\"inner\">Click me</button>\n</div>\n\n<script>\n  outer.addEventListener('click', () => console.log('outer'));\n  inner.addEventListener('click', () => console.log('inner'));\n</script>",
+      "options": [
+        { "id": "A", "text": "outer" },
+        { "id": "B", "text": "inner" },
+        { "id": "C", "text": "They run simultaneously" },
+        { "id": "D", "text": "Only inner runs" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! By default, events bubble from the target element outward.",
+        "incorrect": "Think about the default event propagation direction in the DOM.",
+        "explanation": "DOM events go through three phases: capture (outer to inner), target, and bubble (inner to outer). By default, addEventListener listens during the bubble phase. So when you click the button, 'inner' logs first, then the event bubbles up and 'outer' logs."
+      }
+    },
+    {
+      "id": "html-events-002",
+      "topic": "html-events",
+      "difficulty": "medium",
+      "stem": "What will be logged when the button is clicked?",
+      "code": "<div id=\"parent\">\n  <button id=\"child\">Click</button>\n</div>\n\n<script>\n  parent.addEventListener('click', () => console.log('parent'), true);\n  child.addEventListener('click', (e) => {\n    console.log('child');\n    e.stopPropagation();\n  });\n  parent.addEventListener('click', () => console.log('parent-bubble'));\n</script>",
+      "options": [
+        { "id": "A", "text": "child, parent-bubble" },
+        { "id": "B", "text": "parent, child" },
+        { "id": "C", "text": "parent, child, parent-bubble" },
+        { "id": "D", "text": "child" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! The capture listener runs first, then the target handler which stops propagation.",
+        "incorrect": "The third parameter `true` enables capture mode. What order do capture vs bubble listeners fire?",
+        "explanation": "The first parent listener uses capture mode (third parameter is `true`), so it fires during the capture phase before the event reaches the target. Then 'child' logs. `stopPropagation()` prevents the event from continuing, so 'parent-bubble' never fires."
+      }
+    },
+    {
+      "id": "html-events-003",
+      "topic": "html-events",
+      "difficulty": "hard",
+      "stem": "Using event delegation, how would you efficiently handle clicks on dynamically added list items?",
+      "code": "<ul id=\"list\">\n  <li>Item 1</li>\n  <li>Item 2</li>\n</ul>\n\n// Later: new <li> elements are added dynamically",
+      "options": [
+        { "id": "A", "text": "Attach a click handler to each <li> when it's created" },
+        { "id": "B", "text": "Use list.addEventListener('click', handler) and check event.target" },
+        { "id": "C", "text": "Use document.querySelectorAll('li').forEach(li => li.onclick = handler)" },
+        { "id": "D", "text": "Use MutationObserver to detect new <li> elements and attach handlers" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! Event delegation uses a single handler on a parent element, checking the event target.",
+        "incorrect": "Event delegation leverages event bubbling for efficient handling of dynamic content.",
+        "explanation": "Event delegation attaches one listener to a parent element that persists. When any child is clicked, the event bubbles up. You check `event.target` or `event.target.closest('li')` to determine which item was clicked. This works for existing and future elements, with better performance than individual handlers."
+      }
+    }
+  ]
+}
