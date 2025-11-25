@@ -1,65 +1,216 @@
-import Image from "next/image";
+'use client';
+
+import { useState, useCallback } from 'react';
+import { Sidebar } from '@/components/chat/Sidebar';
+import { ChatHeader } from '@/components/chat/ChatHeader';
+import { MessageThread, EmptyThread, MessageLoading } from '@/components/chat/MessageThread';
+import { MessageBubble } from '@/components/chat/MessageBubble';
+import { ChatInput } from '@/components/chat/ChatInput';
+import { MCQCard, type MCQResponse } from '@/components/learning/MCQCard';
+import { LearningModePanel } from '@/components/learning/LearningModePanel';
+import type { Item } from '@/lib/mcp/schemas/item';
+
+type ModelId = 'claude-4-opus' | 'claude-4-sonnet' | 'claude-3.5-sonnet';
+type Difficulty = 'casual' | 'moderate' | 'rigorous';
+
+interface Message {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: Date;
+  mcqItem?: Item;
+}
+
+interface Conversation {
+  id: string;
+  title: string;
+  timestamp: Date;
+  isActive?: boolean;
+}
+
+// Sample MCQ item for demonstration
+const sampleMCQItem: Item = {
+  id: 'js-this-001',
+  topic: 'js-this',
+  difficulty: 'medium',
+  stem: 'What will be logged to the console when this code executes?',
+  code: `const obj = {
+  name: 'Alice',
+  greet: function() {
+    const inner = () => {
+      console.log(this.name);
+    };
+    inner();
+  }
+};
+obj.greet();`,
+  options: [
+    { id: 'A', text: 'undefined' },
+    { id: 'B', text: 'Alice' },
+    { id: 'C', text: 'TypeError: Cannot read property \'name\' of undefined' },
+    { id: 'D', text: 'An empty string' },
+  ],
+  correct: 'B',
+  feedback: {
+    correct: 'Correct! Arrow functions inherit `this` from their enclosing scope.',
+    incorrect: 'Not quite. Remember that arrow functions don\'t have their own `this` binding.',
+    explanation: 'Arrow functions capture `this` lexically from their surrounding scope. Since `inner` is defined inside `greet`, it inherits `this` from `greet`, which is `obj` due to the method call `obj.greet()`. Therefore, `this.name` is "Alice".',
+  },
+};
+
+// Sample conversations
+const sampleConversations: Conversation[] = [
+  { id: '1', title: 'JavaScript closures explained', timestamp: new Date(), isActive: true },
+  { id: '2', title: 'React hooks best practices', timestamp: new Date(Date.now() - 86400000) },
+  { id: '3', title: 'TypeScript generics', timestamp: new Date(Date.now() - 172800000) },
+];
 
 export default function Home() {
+  const [selectedModel, setSelectedModel] = useState<ModelId>('claude-4-sonnet');
+  const [learningModeEnabled, setLearningModeEnabled] = useState(false);
+  const [difficulty, setDifficulty] = useState<Difficulty>('moderate');
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [conversations, setConversations] = useState<Conversation[]>(sampleConversations);
+  const [learningStats, setLearningStats] = useState({
+    questionsAnswered: 0,
+    correctAnswers: 0,
+    streak: 0,
+  });
+
+  const handleNewChat = useCallback(() => {
+    setMessages([]);
+    setConversations((prev) =>
+      prev.map((c) => ({ ...c, isActive: false }))
+    );
+  }, []);
+
+  const handleSelectConversation = useCallback((id: string) => {
+    setConversations((prev) =>
+      prev.map((c) => ({ ...c, isActive: c.id === id }))
+    );
+    // In a real app, this would load the conversation messages
+    setMessages([]);
+  }, []);
+
+  const handleSendMessage = useCallback(async (content: string) => {
+    const userMessage: Message = {
+      id: crypto.randomUUID(),
+      role: 'user',
+      content,
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+    setIsLoading(true);
+
+    // Simulate API response
+    setTimeout(() => {
+      const assistantMessage: Message = {
+        id: crypto.randomUUID(),
+        role: 'assistant',
+        content: learningModeEnabled
+          ? 'Great question! Let me test your understanding with a quick assessment:'
+          : 'I\'d be happy to help you with that. Let me explain...',
+        timestamp: new Date(),
+        mcqItem: learningModeEnabled ? sampleMCQItem : undefined,
+      };
+
+      setMessages((prev) => [...prev, assistantMessage]);
+      setIsLoading(false);
+    }, 1000);
+  }, [learningModeEnabled]);
+
+  const handleMCQResponse = useCallback((response: MCQResponse) => {
+    setLearningStats((prev) => ({
+      questionsAnswered: prev.questionsAnswered + 1,
+      correctAnswers: prev.correctAnswers + (response.is_correct ? 1 : 0),
+      streak: response.is_correct ? prev.streak + 1 : 0,
+    }));
+
+    // Log response to server
+    fetch('/api/log-response', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...response,
+        session_id: 'demo-session',
+      }),
+    }).catch(console.error);
+  }, []);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="flex h-screen bg-surface-primary">
+      {/* Sidebar */}
+      <Sidebar
+        conversations={conversations}
+        onNewChat={handleNewChat}
+        onSelectConversation={handleSelectConversation}
+      />
+
+      {/* Main content */}
+      <div className="flex flex-1 flex-col min-w-0">
+        {/* Header */}
+        <ChatHeader
+          selectedModel={selectedModel}
+          onModelChange={setSelectedModel}
+          learningModeEnabled={learningModeEnabled}
+          onLearningModeChange={setLearningModeEnabled}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+
+        {/* Content area */}
+        <div className="flex flex-1 overflow-hidden">
+          {/* Message thread */}
+          <div className="flex flex-1 flex-col min-w-0">
+            {messages.length === 0 && !isLoading ? (
+              <EmptyThread />
+            ) : (
+              <MessageThread>
+                {messages.map((message) => (
+                  <div key={message.id}>
+                    <MessageBubble
+                      role={message.role}
+                      timestamp={message.timestamp}
+                    >
+                      <p>{message.content}</p>
+                    </MessageBubble>
+
+                    {/* MCQ Card if present */}
+                    {message.mcqItem && (
+                      <div className="max-w-message mx-auto px-4 py-2">
+                        <MCQCard
+                          item={message.mcqItem}
+                          onResponse={handleMCQResponse}
+                        />
+                      </div>
+                    )}
+                  </div>
+                ))}
+
+                {isLoading && <MessageLoading />}
+              </MessageThread>
+            )}
+
+            {/* Input */}
+            <ChatInput
+              onSubmit={handleSendMessage}
+              disabled={isLoading}
+              learningModeEnabled={learningModeEnabled}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+          </div>
+
+          {/* Learning mode panel (sidebar) */}
+          {learningModeEnabled && (
+            <div className="w-72 shrink-0 border-l border-edge-light bg-surface-primary p-4 overflow-y-auto">
+              <LearningModePanel
+                difficulty={difficulty}
+                onDifficultyChange={setDifficulty}
+                stats={learningStats}
+              />
+            </div>
+          )}
         </div>
-      </main>
+      </div>
     </div>
   );
 }

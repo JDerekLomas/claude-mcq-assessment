@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 
 interface Conversation {
@@ -128,8 +127,6 @@ export function Sidebar({
   onSelectConversation,
   className = '',
 }: SidebarProps) {
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
-
   const formatDate = (date: Date) => {
     const now = new Date();
     const diff = now.getTime() - date.getTime();
@@ -196,8 +193,6 @@ export function Sidebar({
                 <li key={conv.id}>
                   <button
                     onClick={() => onSelectConversation?.(conv.id)}
-                    onMouseEnter={() => setHoveredId(conv.id)}
-                    onMouseLeave={() => setHoveredId(null)}
                     className={`
                       w-full flex items-center gap-2 px-2 py-2
                       rounded-lg text-left text-sm
