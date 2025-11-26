@@ -2,8 +2,15 @@ import Anthropic from '@anthropic-ai/sdk';
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { toolDefinitions, executeTool } from '@/lib/mcp/tools';
+import { callMCPTool, mcqGenerateToolDefinition } from '@/lib/mcp/client';
 
 const anthropic = new Anthropic();
+
+// Combine local tools with remote MCP tools
+const allToolDefinitions = [
+  ...toolDefinitions,
+  mcqGenerateToolDefinition,
+];
 
 const MessageSchema = z.object({
   role: z.enum(['user', 'assistant']),
@@ -59,6 +66,7 @@ Just be a helpful assistant. Answer questions, help with tasks, have conversatio
 - **assessment_get_item**: Gets questions from the item bank
 - **assessment_list_topics**: Shows available topics (legacy)
 - **assessment_list_skills**: Returns the skill tree hierarchy - use this to show learners what's available to explore
+- **mcq_generate**: Generate a new question via the remote MCP server - use this for topics not in the item bank
 
 ## CRITICAL: Question Format
 
@@ -244,7 +252,7 @@ export async function POST(request: NextRequest) {
       model: 'claude-sonnet-4-20250514',
       max_tokens: 4096,
       system: SYSTEM_PROMPT,
-      tools: toolDefinitions.map(t => ({
+      tools: allToolDefinitions.map(t => ({
         name: t.name,
         description: t.description,
         input_schema: t.input_schema as unknown as Anthropic.Tool['input_schema'],
@@ -258,24 +266,51 @@ export async function POST(request: NextRequest) {
         (block): block is Anthropic.ToolUseBlock => block.type === 'tool_use'
       );
 
-      const toolResults: Anthropic.ToolResultBlockParam[] = toolUseBlocks.map(toolUse => {
-        const result = executeTool(toolUse.name, toolUse.input);
+      // Execute tools - some may be local, some remote (async)
+      const toolResults: Anthropic.ToolResultBlockParam[] = await Promise.all(
+        toolUseBlocks.map(async (toolUse) => {
+          // Check if this is a remote MCP tool
+          if (toolUse.name === 'mcq_generate') {
+            const result = await callMCPTool(
+              toolUse.name,
+              toolUse.input as Record<string, unknown>
+            );
 
-        if (result.success) {
-          return {
-            type: 'tool_result' as const,
-            tool_use_id: toolUse.id,
-            content: JSON.stringify(result.data),
-          };
-        } else {
-          return {
-            type: 'tool_result' as const,
-            tool_use_id: toolUse.id,
-            content: JSON.stringify({ error: result.error }),
-            is_error: true,
-          };
-        }
-      });
+            if (result.success) {
+              return {
+                type: 'tool_result' as const,
+                tool_use_id: toolUse.id,
+                content: JSON.stringify(result.data),
+              };
+            } else {
+              return {
+                type: 'tool_result' as const,
+                tool_use_id: toolUse.id,
+                content: JSON.stringify({ error: result.error }),
+                is_error: true,
+              };
+            }
+          }
+
+          // Otherwise use local tool execution
+          const result = executeTool(toolUse.name, toolUse.input);
+
+          if (result.success) {
+            return {
+              type: 'tool_result' as const,
+              tool_use_id: toolUse.id,
+              content: JSON.stringify(result.data),
+            };
+          } else {
+            return {
+              type: 'tool_result' as const,
+              tool_use_id: toolUse.id,
+              content: JSON.stringify({ error: result.error }),
+              is_error: true,
+            };
+          }
+        })
+      );
 
       // Add assistant response and tool results to messages
       anthropicMessages.push({
@@ -293,7 +328,7 @@ export async function POST(request: NextRequest) {
         model: 'claude-sonnet-4-20250514',
         max_tokens: 4096,
         system: SYSTEM_PROMPT,
-        tools: toolDefinitions.map(t => ({
+        tools: allToolDefinitions.map(t => ({
           name: t.name,
           description: t.description,
           input_schema: t.input_schema as unknown as Anthropic.Tool['input_schema'],
