@@ -296,7 +296,9 @@ export default function Home() {
       });
 
       if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.error || `API error: ${response.status}`;
+        throw new Error(errorMessage);
       }
 
       // Handle streaming response
@@ -462,9 +464,23 @@ export default function Home() {
       }
     } catch (error) {
       console.error('Failed to send message:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
+      // Provide user-friendly error message
+      let displayMessage = 'Sorry, I encountered an error. Please try again.';
+      if (errorMessage.includes('API key not configured')) {
+        displayMessage = '⚠️ Claude is not connected. The API key needs to be configured in the server environment variables.';
+      } else if (errorMessage.includes('Invalid API key')) {
+        displayMessage = '⚠️ The API key appears to be invalid. Please check the configuration.';
+      } else if (errorMessage.includes('Rate limit')) {
+        displayMessage = '⏳ Rate limit reached. Please wait a moment and try again.';
+      } else if (errorMessage.includes('overloaded')) {
+        displayMessage = '⏳ Claude is currently busy. Please try again in a few moments.';
+      }
+
       setMessages((prev) => prev.map((m) =>
         m.id === assistantMessageId
-          ? { ...m, content: 'Sorry, I encountered an error. Please try again.', isStreaming: false }
+          ? { ...m, content: displayMessage, isStreaming: false }
           : m
       ));
     } finally {
@@ -654,9 +670,20 @@ export default function Home() {
         }
       } catch (error) {
         console.error('Failed to continue conversation:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
+        let displayMessage = 'Let me know if you\'d like another question!';
+        if (errorMessage.includes('API key not configured')) {
+          displayMessage = '⚠️ Claude is not connected. The API key needs to be configured.';
+        } else if (errorMessage.includes('Invalid API key')) {
+          displayMessage = '⚠️ The API key appears to be invalid.';
+        } else if (errorMessage.includes('Rate limit')) {
+          displayMessage = '⏳ Rate limit reached. Please wait and try again.';
+        }
+
         setMessages((prev) => prev.map((m) =>
           m.id === assistantMessageId
-            ? { ...m, content: 'Let me know if you\'d like another question!', isStreaming: false }
+            ? { ...m, content: displayMessage, isStreaming: false }
             : m
         ));
       } finally {
