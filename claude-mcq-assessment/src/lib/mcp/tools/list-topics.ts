@@ -1,4 +1,4 @@
-import { TopicSchema } from '../schemas/item';
+import { KnownTopics } from '../schemas/item';
 import itemBankData from '../item-bank.json';
 
 export interface TopicInfo {
@@ -28,7 +28,7 @@ const TOPIC_DESCRIPTIONS: Record<string, string> = {
  * @returns Array of topic information objects
  */
 export function listTopics(): TopicInfo[] {
-  const topics = TopicSchema.options;
+  const topics = KnownTopics;
 
   return topics.map(topic => {
     const topicItems = itemBankData.items.filter(item => item.topic === topic);

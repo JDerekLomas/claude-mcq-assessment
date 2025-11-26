@@ -1,5 +1,6 @@
 import { getItem, getItemToolDefinition } from './get-item';
 import { listTopics, listTopicsToolDefinition } from './list-topics';
+import { listSkills, listSkillsToolDefinition, type SkillNode } from './list-skills';
 import type { Item } from '../schemas/item';
 import type { TopicInfo } from './list-topics';
 
@@ -9,13 +10,14 @@ import type { TopicInfo } from './list-topics';
 export const toolDefinitions = [
   getItemToolDefinition,
   listTopicsToolDefinition,
+  listSkillsToolDefinition,
 ] as const;
 
 /**
  * Result type for tool execution.
  */
 export type ToolResult =
-  | { success: true; data: Item | TopicInfo[] | null }
+  | { success: true; data: Item | TopicInfo[] | SkillNode | null }
   | { success: false; error: string };
 
 /**
@@ -49,6 +51,17 @@ export function executeTool(toolName: string, input: unknown): ToolResult {
         };
       }
 
+    case 'assessment_list_skills':
+      try {
+        const skills = listSkills(input as { parent_id?: string; depth?: number });
+        return { success: true, data: skills };
+      } catch (error) {
+        return {
+          success: false,
+          error: `Failed to list skills: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        };
+      }
+
     default:
       return { success: false, error: `Unknown tool: ${toolName}` };
   }
@@ -57,3 +70,4 @@ export function executeTool(toolName: string, input: unknown): ToolResult {
 // Re-export for convenience
 export { getItem, getItemToolDefinition } from './get-item';
 export { listTopics, listTopicsToolDefinition } from './list-topics';
+export { listSkills, listSkillsToolDefinition } from './list-skills';

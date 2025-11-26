@@ -1,7 +1,5 @@
 'use client';
 
-import { Button } from '@/components/ui/Button';
-
 interface Conversation {
   id: string;
   title: string;
@@ -13,110 +11,94 @@ interface SidebarProps {
   conversations?: Conversation[];
   onNewChat?: () => void;
   onSelectConversation?: (id: string) => void;
+  onOpenSettings?: () => void;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
   className?: string;
 }
 
-function PlusIcon({ className }: { className?: string }) {
+// Claude's starburst logo - more accurate version
+function ClaudeLogo({ size = 24 }: { size?: number }) {
   return (
     <svg
-      className={className}
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M8 3V13M3 8H13"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function ChatBubbleIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M14 8C14 11.3137 11.3137 14 8 14C6.85279 14 5.78139 13.6835 4.86833 13.1347L2 14L2.86526 11.1317C2.31652 10.2186 2 9.14721 2 8C2 4.68629 4.68629 2 8 2C11.3137 2 14 4.68629 14 8Z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function SettingsIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M8 10C9.10457 10 10 9.10457 10 8C10 6.89543 9.10457 6 8 6C6.89543 6 6 6.89543 6 8C6 9.10457 6.89543 10 8 10Z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-      />
-      <path
-        d="M12.93 10.18C12.84 10.38 12.82 10.61 12.88 10.82L13.28 12.2C13.35 12.45 13.28 12.71 13.1 12.89L12.89 13.1C12.71 13.28 12.45 13.35 12.2 13.28L10.82 12.88C10.61 12.82 10.38 12.84 10.18 12.93C9.99 13.02 9.84 13.18 9.76 13.38L9.23 14.72C9.14 14.96 8.91 15.12 8.65 15.13H8.35C8.09 15.12 7.86 14.96 7.77 14.72L7.24 13.38C7.16 13.18 7.01 13.02 6.82 12.93C6.62 12.84 6.39 12.82 6.18 12.88L4.8 13.28C4.55 13.35 4.29 13.28 4.11 13.1L3.9 12.89C3.72 12.71 3.65 12.45 3.72 12.2L4.12 10.82C4.18 10.61 4.16 10.38 4.07 10.18C3.98 9.99 3.82 9.84 3.62 9.76L2.28 9.23C2.04 9.14 1.88 8.91 1.87 8.65V8.35C1.88 8.09 2.04 7.86 2.28 7.77L3.62 7.24C3.82 7.16 3.98 7.01 4.07 6.82C4.16 6.62 4.18 6.39 4.12 6.18L3.72 4.8C3.65 4.55 3.72 4.29 3.9 4.11L4.11 3.9C4.29 3.72 4.55 3.65 4.8 3.72L6.18 4.12C6.39 4.18 6.62 4.16 6.82 4.07C7.01 3.98 7.16 3.82 7.24 3.62L7.77 2.28C7.86 2.04 8.09 1.88 8.35 1.87H8.65C8.91 1.88 9.14 2.04 9.23 2.28L9.76 3.62C9.84 3.82 9.99 3.98 10.18 4.07C10.38 4.16 10.61 4.18 10.82 4.12L12.2 3.72C12.45 3.65 12.71 3.72 12.89 3.9L13.1 4.11C13.28 4.29 13.35 4.55 13.28 4.8L12.88 6.18C12.82 6.39 12.84 6.62 12.93 6.82C13.02 7.01 13.18 7.16 13.38 7.24L14.72 7.77C14.96 7.86 15.12 8.09 15.13 8.35V8.65C15.12 8.91 14.96 9.14 14.72 9.23L13.38 9.76C13.18 9.84 13.02 9.99 12.93 10.18Z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-      />
-    </svg>
-  );
-}
-
-function ClaudeLogoIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="24"
-      height="24"
+      width={size}
+      height={size}
       viewBox="0 0 24 24"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
       <path
-        d="M12 2L2 7L12 12L22 7L12 2Z"
-        fill="currentColor"
-        fillOpacity="0.2"
-      />
-      <path
-        d="M2 17L12 22L22 17"
-        stroke="currentColor"
+        d="M12 2L12 22M2 12L22 12M4.93 4.93L19.07 19.07M19.07 4.93L4.93 19.07"
+        stroke="#DA7756"
         strokeWidth="2"
         strokeLinecap="round"
-        strokeLinejoin="round"
       />
-      <path
-        d="M2 12L12 17L22 12"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M2 7L12 12L22 7"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    </svg>
+  );
+}
+
+// Icons for the icon strip
+function NewChatIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 5v14M5 12h14" />
+    </svg>
+  );
+}
+
+function ChatsIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </svg>
+  );
+}
+
+function ProjectsIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+    </svg>
+  );
+}
+
+function ComponentsIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" />
+      <rect x="14" y="14" width="7" height="7" rx="1" />
+    </svg>
+  );
+}
+
+function CodeIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="16 18 22 12 16 6" />
+      <polyline points="8 6 2 12 8 18" />
+    </svg>
+  );
+}
+
+function SettingsIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="3" />
+      <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+    </svg>
+  );
+}
+
+function CollapseIcon({ collapsed }: { collapsed: boolean }) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      {collapsed ? (
+        <path d="M6 4L10 8L6 12" />
+      ) : (
+        <path d="M10 4L6 8L10 12" />
+      )}
     </svg>
   );
 }
@@ -125,6 +107,9 @@ export function Sidebar({
   conversations = [],
   onNewChat,
   onSelectConversation,
+  onOpenSettings,
+  isCollapsed = false,
+  onToggleCollapse,
   className = '',
 }: SidebarProps) {
   const formatDate = (date: Date) => {
@@ -134,7 +119,7 @@ export function Sidebar({
 
     if (days === 0) return 'Today';
     if (days === 1) return 'Yesterday';
-    if (days < 7) return `${days} days ago`;
+    if (days < 7) return 'Previous 7 Days';
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
@@ -150,88 +135,145 @@ export function Sidebar({
   );
 
   return (
-    <aside
-      className={`
-        flex flex-col
-        w-sidebar h-screen
-        bg-surface-secondary
-        border-r border-edge-light
-        ${className}
-      `}
-    >
-      {/* Header with logo */}
-      <div className="flex items-center justify-between px-4 py-4 border-b border-edge-light">
-        <div className="flex items-center gap-2">
-          <ClaudeLogoIcon className="text-claude" />
-          <span className="text-lg font-semibold text-ink-primary font-display">
-            Claude
-          </span>
+    <div className={`flex h-screen ${className}`}>
+      {/* Icon Strip - Always visible */}
+      <div className="flex flex-col w-12 bg-[#F5F4F1] border-r border-[#E8E7E3]">
+        {/* New Chat Button */}
+        <button
+          onClick={onNewChat}
+          className="flex items-center justify-center w-12 h-12 text-[#DA7756] hover:bg-[#E8E7E3] transition-colors"
+          title="New chat"
+        >
+          <div className="w-8 h-8 rounded-lg bg-[#DA7756] flex items-center justify-center">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+          </div>
+        </button>
+
+        {/* Navigation Icons */}
+        <nav className="flex flex-col items-center py-2 space-y-1">
+          <button
+            className="flex items-center justify-center w-10 h-10 text-[#5D5D5D] hover:text-[#0D0D0D] hover:bg-[#E8E7E3] rounded-lg transition-colors"
+            title="Chats"
+          >
+            <ChatsIcon />
+          </button>
+          <button
+            className="flex items-center justify-center w-10 h-10 text-[#5D5D5D] hover:text-[#0D0D0D] hover:bg-[#E8E7E3] rounded-lg transition-colors"
+            title="Projects"
+          >
+            <ProjectsIcon />
+          </button>
+          <button
+            className="flex items-center justify-center w-10 h-10 text-[#5D5D5D] hover:text-[#0D0D0D] hover:bg-[#E8E7E3] rounded-lg transition-colors"
+            title="Components"
+          >
+            <ComponentsIcon />
+          </button>
+          <button
+            className="flex items-center justify-center w-10 h-10 text-[#5D5D5D] hover:text-[#0D0D0D] hover:bg-[#E8E7E3] rounded-lg transition-colors"
+            title="Code"
+          >
+            <CodeIcon />
+          </button>
+        </nav>
+
+        {/* Spacer */}
+        <div className="flex-1" />
+
+        {/* Bottom Icons */}
+        <div className="flex flex-col items-center py-2 space-y-1">
+          <button
+            onClick={onOpenSettings}
+            className="flex items-center justify-center w-10 h-10 text-[#5D5D5D] hover:text-[#0D0D0D] hover:bg-[#E8E7E3] rounded-lg transition-colors"
+            title="Settings"
+          >
+            <SettingsIcon />
+          </button>
+          {/* User Avatar */}
+          <button
+            className="flex items-center justify-center w-10 h-10"
+            title="Account"
+          >
+            <div className="w-7 h-7 rounded-full bg-[#E8DDD4] flex items-center justify-center text-[11px] font-medium text-[#5D5D5D]">
+              DL
+            </div>
+          </button>
         </div>
       </div>
 
-      {/* New chat button */}
-      <div className="px-3 py-3">
-        <Button
-          variant="outline"
-          className="w-full justify-start gap-2 text-ink-secondary"
-          onClick={onNewChat}
-        >
-          <PlusIcon />
-          New chat
-        </Button>
-      </div>
-
-      {/* Conversation history */}
-      <div className="flex-1 overflow-y-auto px-2 py-2">
-        {Object.entries(groupedConversations).map(([label, convs]) => (
-          <div key={label} className="mb-4">
-            <h3 className="px-2 py-1 text-xs font-medium text-ink-tertiary uppercase tracking-wider">
-              {label}
-            </h3>
-            <ul className="space-y-0.5">
-              {convs.map((conv) => (
-                <li key={conv.id}>
-                  <button
-                    onClick={() => onSelectConversation?.(conv.id)}
-                    className={`
-                      w-full flex items-center gap-2 px-2 py-2
-                      rounded-lg text-left text-sm
-                      transition-colors duration-150
-                      ${
-                        conv.isActive
-                          ? 'bg-surface-tertiary text-ink-primary'
-                          : 'text-ink-secondary hover:bg-surface-tertiary hover:text-ink-primary'
-                      }
-                    `}
-                  >
-                    <ChatBubbleIcon className="shrink-0 opacity-60" />
-                    <span className="truncate">{conv.title}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
+      {/* Main Sidebar Panel - Collapsible */}
+      {!isCollapsed && (
+        <aside className="flex flex-col w-[220px] bg-[#FAFAF9] border-r border-[#E8E7E3]">
+          {/* Header with title and collapse */}
+          <div className="flex items-center justify-between px-4 py-3 border-b border-[#E8E7E3]">
+            <span className="text-[14px] font-medium text-[#0D0D0D]">
+              {conversations.find(c => c.isActive)?.title || 'New chat'}
+            </span>
+            <button
+              onClick={onToggleCollapse}
+              className="p-1 text-[#8E8E8E] hover:text-[#5D5D5D] hover:bg-[#E8E7E3] rounded transition-colors"
+              title="Close sidebar"
+            >
+              <CollapseIcon collapsed={false} />
+            </button>
           </div>
-        ))}
 
-        {conversations.length === 0 && (
-          <div className="px-4 py-8 text-center">
-            <p className="text-sm text-ink-tertiary">
-              No conversations yet
-            </p>
+          {/* Conversation History */}
+          <div className="flex-1 overflow-y-auto px-2 py-2">
+            {Object.entries(groupedConversations).map(([label, convs]) => (
+              <div key={label} className="mb-3">
+                <h3 className="px-2 py-1.5 text-[11px] font-medium text-[#8E8E8E] uppercase tracking-wide">
+                  {label}
+                </h3>
+                <ul className="space-y-0.5">
+                  {convs.map((conv) => (
+                    <li key={conv.id}>
+                      <button
+                        onClick={() => onSelectConversation?.(conv.id)}
+                        className={`
+                          w-full px-3 py-2
+                          text-left text-[13px]
+                          rounded-lg
+                          transition-colors duration-150
+                          truncate
+                          ${
+                            conv.isActive
+                              ? 'bg-[#E8E7E3] text-[#0D0D0D] font-medium'
+                              : 'text-[#5D5D5D] hover:bg-[#EEEDE9] hover:text-[#0D0D0D]'
+                          }
+                        `}
+                      >
+                        {conv.title}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+
+            {conversations.length === 0 && (
+              <div className="px-3 py-8 text-center">
+                <p className="text-[13px] text-[#8E8E8E]">
+                  No conversations yet
+                </p>
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </aside>
+      )}
 
-      {/* Footer with settings */}
-      <div className="border-t border-edge-light px-3 py-3">
-        <Button
-          variant="ghost"
-          className="w-full justify-start gap-2 text-ink-secondary"
+      {/* Collapsed state - just show expand button */}
+      {isCollapsed && (
+        <button
+          onClick={onToggleCollapse}
+          className="flex items-center justify-center w-6 bg-[#FAFAF9] border-r border-[#E8E7E3] text-[#8E8E8E] hover:text-[#5D5D5D] hover:bg-[#EEEDE9] transition-colors"
+          title="Open sidebar"
         >
-          <SettingsIcon />
-          Settings
-        </Button>
-      </div>
-    </aside>
+          <CollapseIcon collapsed={true} />
+        </button>
+      )}
+    </div>
   );
 }

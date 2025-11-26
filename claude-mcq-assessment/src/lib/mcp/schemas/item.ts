@@ -12,8 +12,9 @@ export type Difficulty = z.infer<typeof DifficultySchema>;
 /**
  * Topics covered in the item bank.
  * Each topic focuses on a specific area of frontend engineering knowledge.
+ * Note: Generated items may have custom topics not in this list.
  */
-export const TopicSchema = z.enum([
+export const KnownTopics = [
   'js-this',        // JavaScript `this` binding rules
   'js-closures',    // Closures and lexical scoping
   'js-async',       // Promises, async/await, event loop
@@ -21,8 +22,9 @@ export const TopicSchema = z.enum([
   'js-timers',      // setTimeout, setInterval, microtasks
   'js-patterns',    // Common JS patterns and idioms
   'html-events',    // Event bubbling, capturing, delegation
-]);
-export type Topic = z.infer<typeof TopicSchema>;
+] as const;
+export const TopicSchema = z.string().min(1); // Allow any topic string for flexibility
+export type Topic = string;
 
 /**
  * A single answer option for an MCQ item.
@@ -56,10 +58,11 @@ export type Feedback = z.infer<typeof FeedbackSchema>;
  * - Feedback explains the "why", not just the "what"
  */
 export const ItemSchema = z.object({
-  id: z.string().regex(/^[a-z]+-[a-z]+-\d{3}$/, 'Item ID must follow pattern: topic-subtopic-###'),
+  id: z.string().min(1), // Flexible ID format to support generated items
   topic: TopicSchema,
   difficulty: DifficultySchema,
-  stem: z.string().min(10, 'Stem must be descriptive'),
+  skill_path: z.array(z.string()).optional(), // Hierarchical skill location, e.g., ["javascript", "js-async", "js-promises"]
+  stem: z.string().min(5, 'Stem must be descriptive'),
   code: z.string().optional(), // Optional code snippet
   options: z.array(OptionSchema).length(4, 'Must have exactly 4 options'),
   correct: z.string().regex(/^[A-D]$/, 'Correct answer must be A, B, C, or D'),
@@ -70,9 +73,19 @@ export type Item = z.infer<typeof ItemSchema>;
 
 /**
  * Input schema for the assessment_get_item tool.
+ * Uses the known topics enum for validated queries.
  */
+export const KnownTopicSchema = z.enum([
+  'js-this',
+  'js-closures',
+  'js-async',
+  'js-prototypes',
+  'js-timers',
+  'js-patterns',
+  'html-events',
+]);
 export const GetItemInputSchema = z.object({
-  topic: TopicSchema,
+  topic: KnownTopicSchema,
   difficulty: DifficultySchema.optional(),
   exclude_ids: z.array(z.string()).optional(), // IDs to exclude (already seen)
 });

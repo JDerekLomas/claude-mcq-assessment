@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Toggle } from '@/components/ui/Toggle';
+import { cn } from '@/lib/utils';
 
 type ModelId = 'claude-4-opus' | 'claude-4-sonnet' | 'claude-3.5-sonnet';
 
@@ -34,6 +35,7 @@ interface ChatHeaderProps {
   onModelChange?: (model: ModelId) => void;
   learningModeEnabled?: boolean;
   onLearningModeChange?: (enabled: boolean) => void;
+  showLearningModeToggle?: boolean;
   className?: string;
 }
 
@@ -105,6 +107,7 @@ export function ChatHeader({
   onModelChange,
   learningModeEnabled = false,
   onLearningModeChange,
+  showLearningModeToggle = true,
   className = '',
 }: ChatHeaderProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -126,26 +129,16 @@ export function ChatHeader({
 
   return (
     <header
-      className={`
-        flex items-center justify-between
-        px-4 py-3
-        border-b border-edge-light
-        bg-surface-primary
-        ${className}
-      `}
+      className={cn(
+        "flex items-center justify-between px-4 py-3 border-b border-edge-light bg-surface-primary",
+        className
+      )}
     >
       {/* Model selector */}
       <div ref={dropdownRef} className="relative">
         <button
           onClick={() => setDropdownOpen(!dropdownOpen)}
-          className="
-            flex items-center gap-2
-            px-3 py-2
-            rounded-lg
-            text-sm font-medium text-ink-primary
-            hover:bg-surface-secondary
-            transition-colors duration-150
-          "
+          className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-ink-primary hover:bg-surface-secondary transition-colors duration-150"
         >
           {currentModel.name}
           <ChevronDownIcon className={`text-ink-tertiary transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
@@ -154,17 +147,7 @@ export function ChatHeader({
         {/* Dropdown menu */}
         {dropdownOpen && (
           <div
-            className="
-              absolute top-full left-0 mt-1
-              w-72
-              bg-surface-primary
-              border border-edge-light
-              rounded-claude
-              shadow-lg
-              overflow-hidden
-              z-50
-              animate-fade-in
-            "
+            className="absolute top-full left-0 mt-1 w-72 bg-surface-primary border border-edge-light rounded-claude shadow-lg overflow-hidden z-50 animate-fade-in"
           >
             {models.map((model) => (
               <button
@@ -173,13 +156,10 @@ export function ChatHeader({
                   onModelChange?.(model.id);
                   setDropdownOpen(false);
                 }}
-                className={`
-                  w-full flex items-start gap-3 px-4 py-3
-                  text-left
-                  hover:bg-surface-secondary
-                  transition-colors duration-150
-                  ${model.id === selectedModel ? 'bg-surface-secondary' : ''}
-                `}
+                className={cn(
+                  "w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-surface-secondary transition-colors duration-150",
+                  model.id === selectedModel && "bg-surface-secondary"
+                )}
               >
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
@@ -200,18 +180,20 @@ export function ChatHeader({
         )}
       </div>
 
-      {/* Learning Mode toggle */}
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2 text-ink-secondary">
-          <BookOpenIcon className={learningModeEnabled ? 'text-claude' : ''} />
-          <span className="text-sm font-medium">Learning Mode</span>
+      {/* Learning Mode toggle - only shown when there's a conversation */}
+      {showLearningModeToggle && (
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 text-ink-secondary">
+            <BookOpenIcon className={learningModeEnabled ? 'text-claude' : ''} />
+            <span className="text-sm font-medium">Learning Mode</span>
+          </div>
+          <Toggle
+            checked={learningModeEnabled}
+            onChange={onLearningModeChange}
+            size="sm"
+          />
         </div>
-        <Toggle
-          checked={learningModeEnabled}
-          onChange={onLearningModeChange}
-          size="sm"
-        />
-      </div>
+      )}
     </header>
   );
 }

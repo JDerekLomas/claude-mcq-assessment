@@ -11,68 +11,40 @@ interface MessageBubbleProps {
   className?: string;
 }
 
-function ClaudeAvatarIcon({ className }: { className?: string }) {
+// Claude's starburst/asterisk logo
+function ClaudeLogo({ className }: { className?: string }) {
   return (
-    <div
-      className={`
-        flex items-center justify-center
-        w-8 h-8
-        rounded-full
-        bg-claude
-        ${className}
-      `}
+    <svg
+      className={className}
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
     >
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          d="M12 2L4 6V12C4 16.4183 7.58172 20 12 20C16.4183 20 20 16.4183 20 12V6L12 2Z"
-          fill="white"
-          fillOpacity="0.9"
-        />
-        <path
-          d="M12 8V14M12 14L9 11M12 14L15 11"
-          stroke="#C15F3C"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    </div>
+      <path
+        d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07"
+        stroke="#C15F3C"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
   );
 }
 
-function UserAvatarIcon({ className }: { className?: string }) {
+function UserAvatar({ className }: { className?: string }) {
   return (
     <div
       className={`
         flex items-center justify-center
-        w-8 h-8
+        w-7 h-7
         rounded-full
-        bg-surface-tertiary
+        bg-[#E8DDD4]
+        text-[11px] font-semibold text-ink-secondary
         ${className}
       `}
     >
-      <svg
-        width="16"
-        height="16"
-        viewBox="0 0 16 16"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          d="M8 8C9.65685 8 11 6.65685 11 5C11 3.34315 9.65685 2 8 2C6.34315 2 5 3.34315 5 5C5 6.65685 6.34315 8 8 8Z"
-          fill="#666666"
-        />
-        <path
-          d="M8 9C5.23858 9 3 11.0147 3 13.5C3 13.7761 3.22386 14 3.5 14H12.5C12.7761 14 13 13.7761 13 13.5C13 11.0147 10.7614 9 8 9Z"
-          fill="#666666"
-        />
-      </svg>
+      DL
     </div>
   );
 }
@@ -96,50 +68,32 @@ export function MessageBubble({
   return (
     <div
       className={`
-        flex gap-4
-        max-w-message w-full mx-auto
-        px-4 py-4
-        animate-fade-in animate-slide-up
+        max-w-[48rem] w-full mx-auto
+        px-4 py-3
+        animate-fade-in
         ${className}
       `}
     >
-      {/* Avatar */}
-      <div className="shrink-0 pt-1">
+      {/* Header with avatar and role */}
+      <div className="flex items-center gap-2 mb-2">
         {isAssistant ? (
-          <ClaudeAvatarIcon />
+          <ClaudeLogo className="w-6 h-6" />
         ) : (
-          <UserAvatarIcon />
+          <UserAvatar />
+        )}
+        <span className="text-[13px] font-medium text-ink-primary">
+          {isAssistant ? 'Claude' : 'You'}
+        </span>
+        {timestamp && (
+          <span className="text-[11px] text-ink-tertiary">
+            {formatTime(timestamp)}
+          </span>
         )}
       </div>
 
-      {/* Message content */}
-      <div className="flex-1 min-w-0">
-        {/* Header with role and timestamp */}
-        <div className="flex items-center gap-2 mb-1">
-          <span className="text-sm font-semibold text-ink-primary">
-            {isAssistant ? 'Claude' : 'You'}
-          </span>
-          {timestamp && (
-            <span className="text-xs text-ink-tertiary">
-              {formatTime(timestamp)}
-            </span>
-          )}
-        </div>
-
-        {/* Message body */}
-        <div
-          className={`
-            text-ink-primary text-[15px] leading-relaxed
-            prose prose-sm max-w-none
-            prose-p:my-2
-            prose-pre:bg-surface-secondary prose-pre:border prose-pre:border-edge-light prose-pre:rounded-lg
-            prose-code:text-claude prose-code:font-mono prose-code:text-sm
-            prose-code:before:content-none prose-code:after:content-none
-            prose-a:text-claude prose-a:no-underline hover:prose-a:underline
-          `}
-        >
-          {children}
-        </div>
+      {/* Message body */}
+      <div className="pl-8">
+        {children}
       </div>
     </div>
   );
