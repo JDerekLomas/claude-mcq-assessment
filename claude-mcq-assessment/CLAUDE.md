@@ -4,9 +4,17 @@
 A pixel-perfect clone of Claude.ai's chat interface with one addition: interactive MCQ assessment cards that render inline. The goal is to be indistinguishable from claude.ai except when MCQ blocks appear.
 
 ## Architecture
-User <-> Chat UI <-> /api/chat <-> Claude (tools) <-> /lib/mcp/ (Item Bank)
-                         |
-                   /api/log-response -> data/responses.json
+```
+User <-> Chat UI <-> /api/chat <-> Claude (tools) <-> Local Tools (/lib/mcp/)
+                                        |                    |
+                                        +-----> Remote MCP Server (SSE)
+                                        |
+                                  /api/log-response -> data/responses.json
+```
+
+### Local vs Remote Tools
+- **Local tools**: `assessment_get_item`, `assessment_list_topics`, `assessment_list_skills` - read from local item bank
+- **Remote tools**: `mcq_generate` - calls MCQMCP server via SSE for dynamic question generation
 
 ## Key Concepts
 
@@ -28,6 +36,28 @@ Every answer logs: {item_id, selected, correct, latency_ms, timestamp, session_i
 - npm run build: Production build
 - npm run lint: Run ESLint
 
+## Environment Variables
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| ANTHROPIC_API_KEY | Yes | - | Claude API key |
+| MCP_SERVER_URL | No | https://mcqmcp.onrender.com/sse | Remote MCP server endpoint |
+
+## MCP SSE Client
+The app connects to a remote MCP server via Server-Sent Events (SSE) for the `mcq_generate` tool.
+
+```typescript
+// Usage in /lib/mcp/client.ts
+import { callMCPTool } from '@/lib/mcp/client';
+
+const result = await callMCPTool('mcq_generate', {
+  user_id: 'user-123',
+  objective: 'Understanding React hooks',
+  difficulty: 'medium'
+});
+```
+
+Connection is lazy-initialized on first tool call and reused across requests (singleton pattern).
+
 ## Code Style
 - ES modules (import/export), never CommonJS
 - Zod for ALL schema validation
@@ -42,9 +72,10 @@ Every answer logs: {item_id, selected, correct, latency_ms, timestamp, session_i
 | /lib/mcp/tools/get-item.ts | assessment_get_item tool function |
 | /lib/mcp/tools/list-topics.ts | assessment_list_topics tool function |
 | /lib/mcp/tools/index.ts | Tool registry and executor |
+| /lib/mcp/client.ts | MCP SSE client for remote server connection |
 | /lib/parse-mcq.ts | Extracts :::mcq blocks from Claude responses |
 | /components/MCQCard.tsx | Interactive question renderer |
-| /app/api/chat/route.ts | Claude API + tool execution loop |
+| /app/api/chat/route.ts | Claude API + tool execution loop (local + remote) |
 | /app/api/log-response/route.ts | Appends responses to JSON file |
 | /app/page.tsx | Chat UI |
 | /data/responses.json | Accumulated response data |
