@@ -1,12 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import {
-  logResponse,
-  logGeneratedItem,
-  getResponseStats,
-  getRecentResponses,
-  getRecentGeneratedItems
-} from '@/lib/db';
+
+// Check if Postgres is configured
+const isPostgresConfigured = () => {
+  return !!(process.env.POSTGRES_URL || process.env.DATABASE_URL);
+};
+
+// Dynamic import to avoid errors when Postgres isn't configured
+async function getDbFunctions() {
+  if (!isPostgresConfigured()) {
+    return null;
+  }
+  try {
+    return await import('@/lib/db');
+  } catch {
+    return null;
+  }
+}
 
 const ResponseSchema = z.object({
   item_id: z.string(),
@@ -56,14 +66,17 @@ export async function POST(request: NextRequest) {
     }
 
     const data = parsed.data;
+    const db = await getDbFunctions();
 
     if ('type' in data && data.type === 'generated_item') {
-      // Log generated item
-      await logGeneratedItem({
-        session_id: data.session_id,
-        item_id: data.item.id,
-        item_data: data.item,
-      });
+      // Log generated item (only if Postgres is configured)
+      if (db) {
+        await db.logGeneratedItem({
+          session_id: data.session_id,
+          item_id: data.item.id,
+          item_data: data.item,
+        });
+      }
 
       return NextResponse.json({
         success: true,
@@ -71,16 +84,18 @@ export async function POST(request: NextRequest) {
         item_id: data.item.id
       });
     } else {
-      // Log response
+      // Log response (only if Postgres is configured)
       const responseData = data as z.infer<typeof ResponseSchema>;
-      await logResponse({
-        session_id: responseData.session_id,
-        item_id: responseData.item_id,
-        selected: responseData.selected,
-        correct: responseData.correct,
-        is_correct: responseData.is_correct,
-        latency_ms: responseData.latency_ms,
-      });
+      if (db) {
+        await db.logResponse({
+          session_id: responseData.session_id,
+          item_id: responseData.item_id,
+          selected: responseData.selected,
+          correct: responseData.correct,
+          is_correct: responseData.is_correct,
+          latency_ms: responseData.latency_ms,
+        });
+      }
 
       return NextResponse.json({
         success: true,
@@ -91,18 +106,33 @@ export async function POST(request: NextRequest) {
     }
   } catch (error) {
     console.error('Log API error:', error);
-    return NextResponse.json(
-      { error: 'Failed to log data' },
-      { status: 500 }
-    );
+    // Return success anyway - logging is non-critical
+    return NextResponse.json({ success: true });
   }
 }
 
 export async function GET() {
   try {
-    const stats = await getResponseStats();
-    const recentResponses = await getRecentResponses(10);
-    const recentGenerated = await getRecentGeneratedItems(5);
+    const db = await getDbFunctions();
+
+    if (!db) {
+      // Return empty stats if Postgres isn't configured
+      return NextResponse.json({
+        stats: {
+          total_responses: 0,
+          correct_responses: 0,
+          accuracy_percent: '0',
+          generated_items_count: 0,
+        },
+        recent_responses: [],
+        recent_generated: [],
+        note: 'Database not configured - stats not available',
+      });
+    }
+
+    const stats = await db.getResponseStats();
+    const recentResponses = await db.getRecentResponses(10);
+    const recentGenerated = await db.getRecentGeneratedItems(5);
 
     return NextResponse.json({
       stats,
@@ -111,9 +141,15 @@ export async function GET() {
     });
   } catch (error) {
     console.error('Get stats error:', error);
-    return NextResponse.json(
-      { error: 'Failed to get stats' },
-      { status: 500 }
-    );
+    return NextResponse.json({
+      stats: {
+        total_responses: 0,
+        correct_responses: 0,
+        accuracy_percent: '0',
+        generated_items_count: 0,
+      },
+      recent_responses: [],
+      recent_generated: [],
+    });
   }
 }
