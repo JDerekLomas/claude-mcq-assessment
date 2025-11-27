@@ -18,3 +18,11 @@ export async function POST() {
     );
   }
 }
+
+/**
+ * GET /api/db/init
+ * Also supports GET for easy browser access
+ */
+export async function GET() {
+  return POST();
+}
