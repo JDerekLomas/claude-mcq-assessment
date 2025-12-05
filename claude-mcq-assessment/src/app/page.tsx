@@ -15,6 +15,7 @@ import { TabBar } from '@/components/tabs/TabBar';
 import { ResearchTabContent } from '@/components/tabs/ResearchTabContent';
 import { ResearchLinkButton } from '@/components/tabs/ResearchLinkButton';
 import { ProtocolInspector, type ProtocolEvent, type SessionStats } from '@/components/inspector/ProtocolInspector';
+import { DemoLanding } from '@/components/demo/DemoLanding';
 import type { Item } from '@/lib/mcp/schemas/item';
 import type { Artifact } from '@/lib/artifacts/schemas';
 import type { ResearchTab, ResearchLink } from '@/lib/tabs/schemas';
@@ -115,6 +116,7 @@ export default function Home() {
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
   const [protocolEvents, setProtocolEvents] = useState<ProtocolEvent[]>([]);
   const [inspectorOpen, setInspectorOpen] = useState(true);
+  const [showLanding, setShowLanding] = useState(true);
   const lastMcqItemRef = useRef<Item | null>(null);
   const chatInputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -287,6 +289,11 @@ export default function Home() {
   }, [context, setCurrentConversation]);
 
   const handleSendMessage = useCallback(async (content: string) => {
+    // Hide landing page when user sends first message
+    if (showLanding) {
+      setShowLanding(false);
+    }
+
     const userMessage: Message = {
       id: crypto.randomUUID(),
       role: 'user',
@@ -529,7 +536,7 @@ export default function Home() {
     } finally {
       setIsLoading(false);
     }
-  }, [messages, sessionId, currentConversationId, conversations, saveConversation, setCurrentConversation]);
+  }, [messages, sessionId, currentConversationId, conversations, saveConversation, setCurrentConversation, showLanding]);
 
   // Handle Learning Mode toggle from empty state
   const handleLearningModeToggle = useCallback((enabled: boolean) => {
@@ -825,11 +832,22 @@ export default function Home() {
             // Chat content
             <div className="flex flex-1 flex-col min-w-0">
               {messages.length === 0 && !isLoading ? (
-                <EmptyThread
-                  learningModeEnabled={learningModeEnabled}
-                  onLearningModeChange={handleLearningModeToggle}
-                  onSelectTopic={handleSelectTopic}
-                />
+                showLanding ? (
+                  <DemoLanding
+                    onStartDemo={() => {
+                      setShowLanding(false);
+                      setLearningModeEnabled(true);
+                    }}
+                    inspectorOpen={inspectorOpen}
+                    onToggleInspector={() => setInspectorOpen(!inspectorOpen)}
+                  />
+                ) : (
+                  <EmptyThread
+                    learningModeEnabled={learningModeEnabled}
+                    onLearningModeChange={handleLearningModeToggle}
+                    onSelectTopic={handleSelectTopic}
+                  />
+                )
               ) : (
                 <MessageThread>
                   {messages.map((message) => (
