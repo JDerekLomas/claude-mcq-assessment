@@ -226,6 +226,13 @@ Let me start with the main component..."
 
 Then follow with an artifact containing the code.`;
 
+// Types for protocol events emitted via SSE
+type ProtocolEvent =
+  | { type: 'tool_call'; name: string; input: unknown; tool_use_id: string }
+  | { type: 'tool_result'; name: string; result: unknown; tool_use_id: string; success: boolean }
+  | { type: 'text'; content: string }
+  | { type: 'done' };
+
 export async function POST(request: NextRequest) {
   try {
     // Get Anthropic client (validates API key)
@@ -249,6 +256,9 @@ export async function POST(request: NextRequest) {
       content: m.content,
     }));
 
+    // Collect protocol events to emit at the start of the stream
+    const protocolEvents: ProtocolEvent[] = [];
+
     // First, handle any tool calls non-streaming (required for tool use)
     let response = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
@@ -269,7 +279,24 @@ export async function POST(request: NextRequest) {
       );
 
       const toolResults: Anthropic.ToolResultBlockParam[] = toolUseBlocks.map(toolUse => {
+        // Emit tool_call event
+        protocolEvents.push({
+          type: 'tool_call',
+          name: toolUse.name,
+          input: toolUse.input,
+          tool_use_id: toolUse.id,
+        });
+
         const result = executeTool(toolUse.name, toolUse.input);
+
+        // Emit tool_result event
+        protocolEvents.push({
+          type: 'tool_result',
+          name: toolUse.name,
+          result: result.success ? result.data : { error: result.error },
+          tool_use_id: toolUse.id,
+          success: result.success,
+        });
 
         if (result.success) {
           return {
@@ -317,6 +344,12 @@ export async function POST(request: NextRequest) {
     const stream = new ReadableStream({
       async start(controller) {
         try {
+          // First, emit all collected protocol events (tool calls and results)
+          for (const event of protocolEvents) {
+            const data = JSON.stringify(event);
+            controller.enqueue(encoder.encode(`data: ${data}\n\n`));
+          }
+
           const streamResponse = anthropic.messages.stream({
             model: 'claude-sonnet-4-20250514',
             max_tokens: 4096,

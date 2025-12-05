@@ -14,6 +14,7 @@ import { ArtifactCard } from '@/components/artifacts/ArtifactCard';
 import { TabBar } from '@/components/tabs/TabBar';
 import { ResearchTabContent } from '@/components/tabs/ResearchTabContent';
 import { ResearchLinkButton } from '@/components/tabs/ResearchLinkButton';
+import { ProtocolInspector, type ProtocolEvent, type SessionStats } from '@/components/inspector/ProtocolInspector';
 import type { Item } from '@/lib/mcp/schemas/item';
 import type { Artifact } from '@/lib/artifacts/schemas';
 import type { ResearchTab, ResearchLink } from '@/lib/tabs/schemas';
@@ -112,8 +113,32 @@ export default function Home() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [researchTabs, setResearchTabs] = useState<ResearchTab[]>([]);
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
+  const [protocolEvents, setProtocolEvents] = useState<ProtocolEvent[]>([]);
+  const [inspectorOpen, setInspectorOpen] = useState(true);
   const lastMcqItemRef = useRef<Item | null>(null);
   const chatInputRef = useRef<HTMLTextAreaElement>(null);
+
+  // Compute session stats from learning stats
+  const sessionStats: SessionStats = {
+    total_responses: learningStats.questionsAnswered,
+    correct_responses: learningStats.correctAnswers,
+    accuracy_percent: learningStats.questionsAnswered > 0
+      ? (learningStats.correctAnswers / learningStats.questionsAnswered) * 100
+      : 0,
+    avg_latency_ms: 0, // Will be calculated from protocol events
+  };
+
+  // Calculate average latency from logged responses
+  const responseEvents = protocolEvents.filter(e => e.type === 'response_logged');
+  if (responseEvents.length > 0) {
+    const totalLatency = responseEvents.reduce((sum, e) => {
+      if (e.type === 'response_logged') {
+        return sum + e.latency_ms;
+      }
+      return sum;
+    }, 0);
+    sessionStats.avg_latency_ms = totalLatency / responseEvents.length;
+  }
 
   // Load state from persisted context when it becomes available
   useEffect(() => {
@@ -318,7 +343,25 @@ export default function Home() {
             if (line.startsWith('data: ')) {
               try {
                 const data = JSON.parse(line.slice(6));
-                if (data.type === 'text') {
+                // Handle protocol events (tool calls and results)
+                if (data.type === 'tool_call') {
+                  setProtocolEvents((prev) => [...prev, {
+                    type: 'tool_call',
+                    name: data.name,
+                    input: data.input,
+                    tool_use_id: data.tool_use_id,
+                    timestamp: Date.now(),
+                  }]);
+                } else if (data.type === 'tool_result') {
+                  setProtocolEvents((prev) => [...prev, {
+                    type: 'tool_result',
+                    name: data.name,
+                    result: data.result,
+                    tool_use_id: data.tool_use_id,
+                    success: data.success,
+                    timestamp: Date.now(),
+                  }]);
+                } else if (data.type === 'text') {
                   fullContent += data.content;
                   // Update the streaming message
                   setMessages((prev) => prev.map((m) =>
@@ -533,7 +576,7 @@ export default function Home() {
       longestStreak: Math.max(context?.learnerProfile.longestStreak || 0, newStats.streak),
     });
 
-    // Log response to server
+    // Log response to server and add to protocol events
     try {
       await fetch('/api/log-response', {
         method: 'POST',
@@ -543,6 +586,17 @@ export default function Home() {
           session_id: sessionId,
         }),
       });
+
+      // Add response_logged event to protocol inspector
+      setProtocolEvents((prev) => [...prev, {
+        type: 'response_logged',
+        item_id: response.item_id,
+        selected: response.selected,
+        correct: response.correct,
+        is_correct: response.is_correct,
+        latency_ms: response.latency_ms,
+        timestamp: Date.now(),
+      }]);
     } catch (error) {
       console.error('Failed to log response:', error);
     }
@@ -611,7 +665,25 @@ export default function Home() {
                 if (line.startsWith('data: ')) {
                   try {
                     const data = JSON.parse(line.slice(6));
-                    if (data.type === 'text') {
+                    // Handle protocol events (tool calls and results)
+                    if (data.type === 'tool_call') {
+                      setProtocolEvents((prev) => [...prev, {
+                        type: 'tool_call',
+                        name: data.name,
+                        input: data.input,
+                        tool_use_id: data.tool_use_id,
+                        timestamp: Date.now(),
+                      }]);
+                    } else if (data.type === 'tool_result') {
+                      setProtocolEvents((prev) => [...prev, {
+                        type: 'tool_result',
+                        name: data.name,
+                        result: data.result,
+                        tool_use_id: data.tool_use_id,
+                        success: data.success,
+                        timestamp: Date.now(),
+                      }]);
+                    } else if (data.type === 'text') {
                       fullContent += data.content;
                       setMessages((prev) => prev.map((m) =>
                         m.id === assistantMessageId
@@ -814,7 +886,7 @@ export default function Home() {
           )}
 
           {/* Learning mode panel (sidebar) - only show once assessment has started */}
-          {learningModeEnabled && messages.some(m => m.mcqItem) && (
+          {learningModeEnabled && messages.some(m => m.mcqItem) && !inspectorOpen && (
             <div className="w-72 shrink-0 border-l border-edge-light bg-surface-primary p-4 overflow-y-auto">
               <LearningModePanel
                 difficulty={difficulty}
@@ -823,8 +895,30 @@ export default function Home() {
               />
             </div>
           )}
+
+          {/* Protocol Inspector Panel */}
+          {inspectorOpen && (
+            <div className="w-96 shrink-0 border-l border-edge-light overflow-hidden flex flex-col">
+              <ProtocolInspector
+                events={protocolEvents}
+                sessionStats={sessionStats}
+              />
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Inspector Toggle Button */}
+      <button
+        onClick={() => setInspectorOpen(!inspectorOpen)}
+        className={`fixed bottom-4 right-4 z-50 px-4 py-2 rounded-full shadow-lg transition-all ${
+          inspectorOpen
+            ? 'bg-claude text-white hover:bg-claude/90'
+            : 'bg-white text-ink-primary border border-edge-default hover:bg-surface-secondary'
+        }`}
+      >
+        {inspectorOpen ? '✕ Close Inspector' : '🔍 Protocol Inspector'}
+      </button>
     </div>
   );
 }
