@@ -1,135 +1,30 @@
-# MCQMCP
+# MCQMCP Integration Guide
 
-An MCP server that brings validated assessments to AI chat interfaces. Instead of AI generating quiz questions (which may be inaccurate or poorly calibrated), MCQMCP provides curated item banks that Claude can access via tool calls.
-
-**[Read the full vision →](VISION.md)** | **[R&D Roadmap →](ROADMAP.md)** | **[Research Agenda →](RESEARCH.md)**
-
-## Why This Exists
-
-When learning through AI chat, you might ask Claude to quiz you. But there's a problem:
-
-- **AI-generated questions** can have wrong answers, poor distractors, or inconsistent difficulty
-- **No progress tracking** across sessions - your learning history is lost
-- **No validation** - questions aren't tested for educational effectiveness
-
-MCQMCP solves this by separating concerns:
-
-- **Item banks** contain validated, curated questions with calibrated difficulty
-- **Claude requests questions** via MCP tools rather than generating them
-- **Responses are logged** for progress tracking and learning analytics
-- **Any Claude interface** can integrate - it's not tied to one UI
-
-## Architecture
-
-```
-┌─────────────────┐     ┌─────────────────┐
-│   claudetabs    │     │  your clone     │
-│   (or any UI)   │     │                 │
-└────────┬────────┘     └────────┬────────┘
-         │                       │
-         └───────────┬───────────┘
-                     ▼
-              ┌─────────────┐
-              │   Claude    │
-              └──────┬──────┘
-                     │ MCP Protocol (HTTP)
-                     ▼
-         ┌───────────────────────┐
-         │        MCQMCP         │
-         │                       │
-         │  Tools:               │
-         │  • assessment_get_item│
-         │  • assessment_list_   │
-         │    topics             │
-         │  • assessment_log_    │
-         │    response           │
-         │                       │
-         │  Storage:             │
-         │  • Item banks         │
-         │  • Response logs      │
-         │  • User progress      │
-         └───────────────────────┘
-```
+MCQMCP provides validated MCQ assessments via MCP tools. This guide covers integration with your Claude interface.
 
 ## How It Works
 
-### For Learners
-
-1. Chat with Claude in your favorite interface (claudetabs, etc.)
-2. Ask to practice a topic: "Quiz me on JavaScript closures"
-3. Claude fetches a validated question from MCQMCP
-4. Question renders as an interactive card in chat
-5. You answer, get instant feedback
-6. Your progress is tracked across sessions
-
-### For Clone Developers
-
-1. Get an API key from MCQMCP
-2. Connect your Claude integration to the MCP server
-3. Implement `:::mcq` block parsing in your UI
-4. Build an MCQ card component matching your design
-5. Pass user identifiers so progress persists
-
-### For Learning Engineers
-
-MCQMCP captures the data you need to measure learning:
-
-**Response-level data:**
-- Item ID, selected option, correctness
-- Response latency (time from question render to answer)
-- Session and user identifiers
-- Timestamp
-
-**Item analytics:**
-- Difficulty index (% correct)
-- Discrimination index (how well items differentiate learners)
-- Distractor analysis (which wrong answers are chosen)
-- Response time distributions
-
-**Learner analytics:**
-- Topic mastery over time
-- Learning curves
-- Knowledge gaps
-- Session patterns
-
-**What this enables:**
-- Validate item quality with real response data
-- Identify poorly-calibrated questions
-- Measure knowledge retention across sessions
-- A/B test instructional approaches
-- Build adaptive item selection (serve harder items as learners improve)
+1. User asks Claude to quiz them on a topic
+2. Claude calls `assessment_get_item` to fetch a validated question
+3. Claude returns the item in `:::mcq` format
+4. Your UI parses and renders an interactive MCQ card
+5. User answers; your UI calls `assessment_log_response`
+6. Response data enables progress tracking and psychometrics
 
 ## MCP Tools
 
 ### `assessment_get_item`
-
-Fetches a question from an item bank.
+Fetch a question from the item bank.
 
 ```typescript
-{
-  topic: string,                          // e.g. "js-closures"
-  difficulty?: "easy" | "medium" | "hard",
-  bank?: string                           // custom bank ID, or default
-}
+{ topic: string, difficulty?: "easy" | "medium" | "hard" }
 ```
 
 ### `assessment_list_topics`
-
-Lists available topics in a bank.
-
-```typescript
-{
-  bank?: string
-}
-```
-
-### `assessment_list_banks`
-
-Lists available item banks (default + custom).
+List available topics.
 
 ### `assessment_log_response`
-
-Records a user's answer for progress tracking.
+Record a user's answer.
 
 ```typescript
 {
@@ -137,21 +32,21 @@ Records a user's answer for progress tracking.
   selected: string,      // "A", "B", "C", "D"
   correct: boolean,
   latency_ms: number,
-  user_id: string,       // provided by clone
+  user_id: string,
   session_id?: string
 }
 ```
 
 ## MCQ Protocol
 
-When Claude wants to show a question, it wraps the JSON in delimiters:
+Claude wraps questions in `:::mcq` delimiters:
 
 ```
 :::mcq
 {
   "id": "js-closures-1",
   "stem": "What will this code output?",
-  "code": "for (var i = 0; i < 3; i++) {\n  setTimeout(() => console.log(i), 0);\n}",
+  "code": "for (var i = 0; i < 3; i++) { setTimeout(() => console.log(i), 0); }",
   "options": [
     {"key": "A", "text": "0, 1, 2"},
     {"key": "B", "text": "3, 3, 3"},
@@ -160,75 +55,18 @@ When Claude wants to show a question, it wraps the JSON in delimiters:
   ],
   "correct": "B",
   "feedback": {
-    "correct": "Right! `var` is function-scoped, so all callbacks share the same `i`, which is 3 after the loop.",
-    "incorrect": "Remember that `var` is function-scoped, not block-scoped. By the time the callbacks run, the loop has finished."
+    "correct": "Right! var is function-scoped...",
+    "incorrect": "Remember that var is function-scoped..."
   }
 }
 :::
 ```
 
-Your UI parses these blocks and renders an interactive card.
+Parse these blocks and render an interactive card.
 
-## Authentication
+## Integration Steps
 
-Two-layer auth model:
-
-| Layer | Purpose | Mechanism |
-|-------|---------|-----------|
-| Clone → MCQMCP | Identifies the integrating app | API key in `Authorization` header |
-| User context | Tracks individual progress | `X-User-ID` header (opaque ID from clone) |
-
-The clone handles its own user authentication. MCQMCP just needs a consistent user identifier to associate responses.
-
-```
-Authorization: Bearer <clone_api_key>
-X-User-ID: <your_user_id>
-```
-
-## REST API
-
-Beyond MCP tools, direct HTTP endpoints for clones and analytics:
-
-**User data (for clones):**
-```
-GET  /users/{user_id}/progress    # Aggregated stats
-GET  /users/{user_id}/responses   # Response history
-```
-
-**Item banks:**
-```
-GET  /banks                        # List available banks
-POST /banks                        # Upload custom item bank
-GET  /banks/{bank_id}/items        # List items in a bank
-```
-
-**Analytics (for learning engineers):**
-```
-GET  /analytics/items/{item_id}    # Item performance metrics
-GET  /analytics/banks/{bank_id}    # Aggregate bank statistics
-GET  /analytics/responses          # Export response data (with filters)
-```
-
-## Item Banks
-
-MCQMCP ships with a default bank covering frontend engineering:
-
-- `js-this`, `js-closures`, `js-async`, `js-prototypes`
-- `js-timers`, `js-patterns`, `html-events`
-
-You can create custom banks for any domain:
-- Company onboarding
-- Certification prep
-- Course materials
-- Compliance training
-
-## Integrating with Your Clone
-
-### 1. Connect to MCP server
-
-Configure your Claude integration to use MCQMCP's HTTP endpoint.
-
-### 2. Parse MCQ blocks
+### 1. Parse MCQ blocks
 
 ```typescript
 function parseMCQBlocks(content: string) {
@@ -242,32 +80,53 @@ function parseMCQBlocks(content: string) {
 }
 ```
 
-### 3. Render MCQ cards
+### 2. Build an MCQ card component
 
-Build a component that:
-- Displays the question stem and code (if any)
-- Shows clickable options
-- Reveals feedback on selection
-- Tracks time from render to click (latency_ms)
+- Display stem and code (if any)
+- Show clickable options
+- Track time from render to click (`latency_ms`)
+- Reveal feedback after selection
 
-### 4. Log responses
+### 3. Log responses
 
 After user answers, call `assessment_log_response` with the result.
+
+## Authentication
+
+```
+Authorization: Bearer <api_key>
+X-User-ID: <user_identifier>
+```
+
+Your app handles user auth. MCQMCP just needs a consistent user ID to track progress.
 
 ## Development
 
 ```bash
 npm install
-npm run dev
+npm run dev      # http://localhost:3000
+npm run build    # production build
+npm run lint     # ESLint
 ```
+
+## Data Captured
+
+**Per response:**
+- Item ID, selected option, correctness
+- Response latency (ms)
+- Timestamp, session ID, user ID
+
+**Analytics enabled:**
+- Difficulty index (% correct)
+- Discrimination index
+- Distractor analysis
+- Learning curves per user
+- Topic mastery over time
 
 ## Tech Stack
 
-- **Runtime**: Node.js
-- **Protocol**: MCP over HTTP+SSE
-- **Database**: Postgres
-- **Validation**: Zod
-
-## License
-
-MIT
+- Next.js 16 + React 19
+- Tailwind CSS + shadcn/ui
+- better-sqlite3
+- @anthropic-ai/sdk
+- Zod

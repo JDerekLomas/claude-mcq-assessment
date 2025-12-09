@@ -1,36 +1,47 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MCQMCP
 
-## Getting Started
+**Measurement infrastructure for AI-assisted learning.**
 
-First, run the development server:
+MCQMCP is an MCP server that provides validated assessments to any Claude interface. Instead of AI generating quiz questions (which may have wrong answers), Claude requests curated items from MCQMCP and logs learner responses.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## The Problem
+
+When you ask Claude to quiz you:
+- AI-generated questions can have wrong answers
+- No progress tracking across sessions
+- No validation that questions measure what they claim
+
+## The Solution
+
+```
+Your Claude UI ──→ Claude ──→ MCQMCP
+                              │
+                    ┌─────────┴─────────┐
+                    │ • Validated items │
+                    │ • Response logging│
+                    │ • Progress tracking│
+                    └───────────────────┘
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Claude calls MCP tools to fetch questions and log answers. Your UI renders them. MCQMCP captures everything needed to measure learning.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Quick Start
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+cd claude-mcq-assessment
+npm install
+npm run dev
+```
 
-## Learn More
+Visit http://localhost:3000
 
-To learn more about Next.js, take a look at the following resources:
+## Documentation
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **[README](claude-mcq-assessment/README.md)** — Integration guide
+- **[VISION](claude-mcq-assessment/VISION.md)** — Why this exists
+- **[ROADMAP](claude-mcq-assessment/ROADMAP.md)** — What we're building
+- **[RESEARCH](claude-mcq-assessment/RESEARCH.md)** — Open questions
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## License
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT
