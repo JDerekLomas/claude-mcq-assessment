@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Github, FileText, ArrowRight } from 'lucide-react';
+import { Github, ArrowRight } from 'lucide-react';
+import { LogoMark } from '@/components/brand/Logo';
 
 export function Navigation() {
   const pathname = usePathname();
@@ -12,18 +13,9 @@ export function Navigation() {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-edge-light">
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-8 h-8 rounded-lg bg-claude flex items-center justify-center">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M12 2L12 22M2 12L22 12M4.93 4.93L19.07 19.07M19.07 4.93L4.93 19.07"
-                stroke="white"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            </svg>
-          </div>
-          <span className="text-xl font-semibold text-ink-primary group-hover:text-claude transition-colors">
+        <Link href="/" className="flex items-center gap-2.5 group">
+          <LogoMark size={28} />
+          <span className="text-lg font-semibold text-ink-primary group-hover:text-claude transition-colors">
             MCQMCP
           </span>
         </Link>

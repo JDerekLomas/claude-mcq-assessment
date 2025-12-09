@@ -22,6 +22,14 @@ export const KnownTopics = [
   'js-timers',      // setTimeout, setInterval, microtasks
   'js-patterns',    // Common JS patterns and idioms
   'html-events',    // Event bubbling, capturing, delegation
+  'vibe-prompting', // Effective prompting for AI code generation
+  'vibe-review',    // Reviewing and validating AI-generated code
+  'vibe-workflow',  // Integrating AI assistants into development workflow
+  'react-hooks',    // useState, useEffect, useRef, custom hooks
+  'react-state',    // State management, lifting state, context
+  'react-rendering',// Re-renders, memoization, keys, reconciliation
+  'react-patterns', // Common React patterns and best practices
+  'plasma-cells',   // Plasma cell biology, antibody production, differentiation
 ] as const;
 export const TopicSchema = z.string().min(1); // Allow any topic string for flexibility
 export type Topic = string;
@@ -83,6 +91,14 @@ export const KnownTopicSchema = z.enum([
   'js-timers',
   'js-patterns',
   'html-events',
+  'vibe-prompting',
+  'vibe-review',
+  'vibe-workflow',
+  'react-hooks',
+  'react-state',
+  'react-rendering',
+  'react-patterns',
+  'plasma-cells',
 ]);
 export const GetItemInputSchema = z.object({
   topic: KnownTopicSchema,

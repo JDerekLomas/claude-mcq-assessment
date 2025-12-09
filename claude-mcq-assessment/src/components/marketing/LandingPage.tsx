@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
 import {
   ArrowRight,
   Database,
@@ -10,58 +9,51 @@ import {
   Code,
   BookOpen,
   GitBranch,
-  ChevronRight,
   Play,
   CheckCircle,
   Users,
   Layers
 } from 'lucide-react';
+import { SequenceDiagram, ArchitectureDiagram, ValueLoopDiagram } from '@/components/diagrams/FlowDiagrams';
+import { LogoMark } from '@/components/brand/Logo';
 
 function HeroSection() {
   return (
-    <section className="pt-32 pb-20 px-6">
+    <section className="pt-24 pb-12 px-6">
       <div className="max-w-4xl mx-auto text-center">
         {/* Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-claude/10 text-claude text-sm font-medium mb-8">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-claude/10 text-claude text-sm font-medium mb-6">
           <span className="w-2 h-2 rounded-full bg-claude animate-pulse" />
           Open Source MCP Server
         </div>
 
         {/* Headline */}
-        <h1 className="text-5xl md:text-6xl font-bold text-ink-primary mb-6 leading-tight">
-          Measure what humans
-          <br />
-          <span className="text-claude">actually learn</span>
+        <h1 className="text-4xl md:text-5xl font-bold text-ink-primary mb-4 leading-tight">
+          Measure what humans <span className="text-claude">actually learn</span>
         </h1>
 
         {/* Subhead */}
-        <p className="text-xl text-ink-secondary max-w-2xl mx-auto mb-4">
+        <p className="text-lg text-ink-secondary max-w-2xl mx-auto mb-6">
           MCQMCP is measurement infrastructure for AI-assisted learning.
-          Bring validated assessments to any Claude interface with full data capture.
-        </p>
-
-        <p className="text-base text-ink-tertiary max-w-xl mx-auto mb-10">
-          No more AI-generated quiz questions with wrong answers.
-          No more losing progress across sessions.
-          Finally measure learning outcomes, not just engagement.
+          Validated assessments + full data capture for any Claude interface.
         </p>
 
         {/* CTAs */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link
             href="/demo"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-claude text-white font-medium rounded-full hover:bg-claude/90 transition-all shadow-lg shadow-claude/20 hover:shadow-xl hover:shadow-claude/30"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-claude text-white font-medium rounded-full hover:bg-claude/90 transition-all shadow-lg shadow-claude/20 hover:shadow-xl hover:shadow-claude/30"
           >
-            <Play size={18} />
+            <Play size={16} />
             Try the Demo
           </Link>
           <a
             href="https://github.com/JDerekLomas/claude-mcq-assessment"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-white text-ink-primary font-medium rounded-full border border-edge-default hover:border-ink-tertiary transition-all"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-white text-ink-primary font-medium rounded-full border border-edge-default hover:border-ink-tertiary transition-all"
           >
-            <GitBranch size={18} />
+            <GitBranch size={16} />
             View on GitHub
           </a>
         </div>
@@ -72,45 +64,45 @@ function HeroSection() {
 
 function ProblemSection() {
   return (
-    <section className="py-20 px-6 bg-surface-secondary">
+    <section className="py-12 px-6 bg-surface-secondary">
       <div className="max-w-5xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold text-ink-primary mb-4">
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-bold text-ink-primary mb-2">
             The problem with AI-generated quizzes
           </h2>
-          <p className="text-lg text-ink-secondary max-w-2xl mx-auto">
+          <p className="text-ink-secondary">
             When you ask an LLM to quiz you, you're flying blind.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-2xl p-6 border border-edge-light">
-            <div className="w-12 h-12 rounded-xl bg-red-100 flex items-center justify-center mb-4">
-              <span className="text-2xl">❌</span>
+        <div className="grid md:grid-cols-3 gap-4">
+          <div className="bg-white rounded-xl p-5 border border-edge-light">
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-xl">❌</span>
+              <h3 className="font-semibold text-ink-primary">Wrong Answers</h3>
             </div>
-            <h3 className="font-semibold text-ink-primary mb-2">Wrong Answers</h3>
             <p className="text-sm text-ink-secondary">
-              AI-generated questions can have incorrect "correct" answers, poor distractors, or ambiguous stems.
+              AI-generated questions can have incorrect answers or ambiguous stems.
             </p>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 border border-edge-light">
-            <div className="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center mb-4">
-              <span className="text-2xl">📭</span>
+          <div className="bg-white rounded-xl p-5 border border-edge-light">
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-xl">📭</span>
+              <h3 className="font-semibold text-ink-primary">No Progress</h3>
             </div>
-            <h3 className="font-semibold text-ink-primary mb-2">No Progress Tracking</h3>
             <p className="text-sm text-ink-secondary">
-              Your learning history disappears when the session ends. No mastery tracking, no spaced repetition.
+              Learning history disappears when sessions end. No mastery tracking.
             </p>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 border border-edge-light">
-            <div className="w-12 h-12 rounded-xl bg-yellow-100 flex items-center justify-center mb-4">
-              <span className="text-2xl">📊</span>
+          <div className="bg-white rounded-xl p-5 border border-edge-light">
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-xl">📊</span>
+              <h3 className="font-semibold text-ink-primary">No Validation</h3>
             </div>
-            <h3 className="font-semibold text-ink-primary mb-2">No Validation</h3>
             <p className="text-sm text-ink-secondary">
-              No way to know if questions are well-calibrated. No psychometrics. No item analysis.
+              No psychometrics, no item analysis, no calibration data.
             </p>
           </div>
         </div>
@@ -121,75 +113,55 @@ function ProblemSection() {
 
 function SolutionSection() {
   return (
-    <section id="how-it-works" className="py-20 px-6">
+    <section id="how-it-works" className="py-12 px-6">
       <div className="max-w-5xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold text-ink-primary mb-4">
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-bold text-ink-primary mb-2">
             How MCQMCP works
           </h2>
-          <p className="text-lg text-ink-secondary max-w-2xl mx-auto">
-            Separate content delivery from measurement. Claude requests items via MCP tools,
-            responses flow back for analytics.
+          <p className="text-ink-secondary max-w-2xl mx-auto">
+            Content out, data back. Claude requests items via MCP, responses flow back for analytics.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 mb-16">
+        <div className="grid md:grid-cols-3 gap-6 mb-10">
           <div className="text-center">
-            <div className="w-16 h-16 rounded-2xl bg-blue-100 flex items-center justify-center mx-auto mb-4">
-              <Database size={28} className="text-blue-600" />
+            <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center mx-auto mb-3">
+              <Database size={22} className="text-blue-600" />
             </div>
-            <h3 className="font-semibold text-ink-primary mb-2">Item Discovery</h3>
+            <h3 className="font-semibold text-ink-primary mb-1">Item Discovery</h3>
             <p className="text-sm text-ink-secondary">
-              Claude calls <code className="bg-surface-tertiary px-1.5 py-0.5 rounded text-xs">assessment_get_item</code> to
-              find relevant questions from curated banks with metadata.
+              Claude calls <code className="bg-surface-tertiary px-1 py-0.5 rounded text-xs">get_item</code> to fetch curated questions.
             </p>
           </div>
 
           <div className="text-center">
-            <div className="w-16 h-16 rounded-2xl bg-green-100 flex items-center justify-center mx-auto mb-4">
-              <Zap size={28} className="text-green-600" />
+            <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center mx-auto mb-3">
+              <Zap size={22} className="text-green-600" />
             </div>
-            <h3 className="font-semibold text-ink-primary mb-2">Response Logging</h3>
+            <h3 className="font-semibold text-ink-primary mb-1">Response Logging</h3>
             <p className="text-sm text-ink-secondary">
-              Every answer captured with latency, correctness, and session context.
-              Data flows back automatically.
+              Every answer captured with latency and correctness.
             </p>
           </div>
 
           <div className="text-center">
-            <div className="w-16 h-16 rounded-2xl bg-purple-100 flex items-center justify-center mx-auto mb-4">
-              <BarChart3 size={28} className="text-purple-600" />
+            <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center mx-auto mb-3">
+              <BarChart3 size={22} className="text-purple-600" />
             </div>
-            <h3 className="font-semibold text-ink-primary mb-2">Learning Analytics</h3>
+            <h3 className="font-semibold text-ink-primary mb-1">Learning Analytics</h3>
             <p className="text-sm text-ink-secondary">
-              Compute item statistics, track mastery over time, enable adaptive selection.
-              Measure actual learning.
+              Item stats, mastery tracking, adaptive selection.
             </p>
           </div>
         </div>
 
         {/* Architecture Diagram */}
-        <div className="bg-ink-primary rounded-2xl p-8 text-white font-mono text-sm overflow-x-auto">
-          <pre className="whitespace-pre">{`
-  ┌─────────────────────────────────────────────────────────────┐
-  │              Your Clone / Claude Interface                   │
-  └──────────────────────────┬──────────────────────────────────┘
-                             │ MCP Protocol
-                             ▼
-  ┌─────────────────────────────────────────────────────────────┐
-  │                       MCQMCP Server                          │
-  │                                                              │
-  │   Tools:                         Data:                       │
-  │   • assessment_get_item          • Item banks (curated)      │
-  │   • assessment_list_topics       • Response logs             │
-  │   • assessment_log_response      • User progress             │
-  │                                                              │
-  │   Analytics:                     Output:                     │
-  │   • Item difficulty (p-value)    • Mastery tracking          │
-  │   • Discrimination index         • Learning curves           │
-  │   • Response latency             • Psychometric reports      │
-  └─────────────────────────────────────────────────────────────┘
-          `}</pre>
+        <ArchitectureDiagram />
+
+        {/* Sequence Diagram */}
+        <div className="mt-8">
+          <SequenceDiagram />
         </div>
       </div>
     </section>
@@ -198,94 +170,86 @@ function SolutionSection() {
 
 function DemoPreviewSection() {
   return (
-    <section className="py-20 px-6 bg-surface-secondary">
+    <section className="py-12 px-6 bg-surface-secondary">
       <div className="max-w-5xl mx-auto">
-        <div className="grid md:grid-cols-2 gap-12 items-center">
+        <div className="grid md:grid-cols-2 gap-8 items-center">
           <div>
-            <h2 className="text-3xl font-bold text-ink-primary mb-4">
+            <h2 className="text-2xl font-bold text-ink-primary mb-3">
               See the protocol in action
             </h2>
-            <p className="text-lg text-ink-secondary mb-6">
-              The demo includes a Protocol Inspector that shows MCP tool calls,
-              item retrieval, and response logging in real-time.
+            <p className="text-ink-secondary mb-4">
+              The demo shows MCP tool calls, item retrieval, and response logging.
             </p>
 
-            <ul className="space-y-3 mb-8">
-              <li className="flex items-start gap-3">
-                <CheckCircle size={20} className="text-green-600 mt-0.5 shrink-0" />
-                <span className="text-ink-secondary">Watch <code className="bg-white px-1.5 py-0.5 rounded text-xs border border-edge-light">assessment_get_item</code> calls with JSON payloads</span>
+            <ul className="space-y-2 mb-6">
+              <li className="flex items-center gap-2">
+                <CheckCircle size={16} className="text-green-600 shrink-0" />
+                <span className="text-sm text-ink-secondary">Watch tool calls with JSON payloads</span>
               </li>
-              <li className="flex items-start gap-3">
-                <CheckCircle size={20} className="text-green-600 mt-0.5 shrink-0" />
-                <span className="text-ink-secondary">See item metadata: topic, difficulty, discrimination</span>
+              <li className="flex items-center gap-2">
+                <CheckCircle size={16} className="text-green-600 shrink-0" />
+                <span className="text-sm text-ink-secondary">See item metadata and psychometrics</span>
               </li>
-              <li className="flex items-start gap-3">
-                <CheckCircle size={20} className="text-green-600 mt-0.5 shrink-0" />
-                <span className="text-ink-secondary">Track response logging with latency measurements</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <CheckCircle size={20} className="text-green-600 mt-0.5 shrink-0" />
-                <span className="text-ink-secondary">Live session stats: accuracy, response count, avg time</span>
+              <li className="flex items-center gap-2">
+                <CheckCircle size={16} className="text-green-600 shrink-0" />
+                <span className="text-sm text-ink-secondary">Track responses with latency</span>
               </li>
             </ul>
 
             <Link
               href="/demo"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-claude text-white font-medium rounded-full hover:bg-claude/90 transition-all"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-claude text-white font-medium rounded-full hover:bg-claude/90 transition-all"
             >
               Try the Demo
               <ArrowRight size={16} />
             </Link>
           </div>
 
-          <div className="bg-white rounded-2xl border border-edge-light shadow-xl overflow-hidden">
-            <div className="bg-surface-secondary px-4 py-3 border-b border-edge-light flex items-center gap-2">
-              <span className="text-lg">🔍</span>
+          <div className="bg-white rounded-xl border border-edge-light shadow-lg overflow-hidden">
+            <div className="bg-surface-secondary px-3 py-2 border-b border-edge-light flex items-center gap-2">
+              <span className="text-base">🔍</span>
               <span className="font-medium text-ink-primary text-sm">Protocol Inspector</span>
             </div>
-            <div className="p-4 space-y-3">
+            <div className="p-3 space-y-2">
               {/* Mock tool call */}
-              <div className="border border-edge-light rounded-lg p-3 bg-blue-50/50">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-6 h-6 rounded bg-blue-100 flex items-center justify-center">
-                    <Code size={12} className="text-blue-600" />
+              <div className="border border-edge-light rounded-lg p-2.5 bg-blue-50/50">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <div className="w-5 h-5 rounded bg-blue-100 flex items-center justify-center">
+                    <Code size={10} className="text-blue-600" />
                   </div>
-                  <span className="text-xs font-medium">MCP Tool Call</span>
-                  <code className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">assessment_get_item</code>
+                  <code className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">get_item</code>
                 </div>
-                <pre className="text-xs text-ink-secondary bg-white rounded p-2 overflow-hidden">{`{ "topic": "js-closures", "difficulty": "medium" }`}</pre>
+                <pre className="text-xs text-ink-secondary bg-white rounded p-1.5 overflow-hidden">{`{ "topic": "js-closures" }`}</pre>
               </div>
 
               {/* Mock result */}
-              <div className="border border-green-200 rounded-lg p-3 bg-green-50/50">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-6 h-6 rounded bg-green-100 flex items-center justify-center">
-                    <CheckCircle size={12} className="text-green-600" />
+              <div className="border border-green-200 rounded-lg p-2.5 bg-green-50/50">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <div className="w-5 h-5 rounded bg-green-100 flex items-center justify-center">
+                    <CheckCircle size={10} className="text-green-600" />
                   </div>
-                  <span className="text-xs font-medium">Tool Result</span>
+                  <span className="text-xs font-medium">Result</span>
                 </div>
-                <div className="flex gap-2 flex-wrap">
-                  <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">js-closures</span>
-                  <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded">medium</span>
-                  <span className="text-xs bg-surface-tertiary text-ink-secondary px-2 py-1 rounded">ID: js-closures-042</span>
+                <div className="flex gap-1.5 flex-wrap">
+                  <span className="text-xs bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded">js-closures</span>
+                  <span className="text-xs bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded">medium</span>
                 </div>
               </div>
 
               {/* Mock stats */}
-              <div className="bg-surface-secondary rounded-lg p-3">
-                <div className="text-xs text-ink-tertiary mb-2">Session Stats</div>
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="text-center">
-                    <div className="text-lg font-bold text-ink-primary">3</div>
+              <div className="bg-surface-secondary rounded-lg p-2.5">
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div>
+                    <div className="text-base font-bold text-ink-primary">3</div>
                     <div className="text-xs text-ink-tertiary">Responses</div>
                   </div>
-                  <div className="text-center">
-                    <div className="text-lg font-bold text-green-600">67%</div>
+                  <div>
+                    <div className="text-base font-bold text-green-600">67%</div>
                     <div className="text-xs text-ink-tertiary">Accuracy</div>
                   </div>
-                  <div className="text-center">
-                    <div className="text-lg font-bold text-ink-primary">12.4s</div>
-                    <div className="text-xs text-ink-tertiary">Avg Time</div>
+                  <div>
+                    <div className="text-base font-bold text-ink-primary">12s</div>
+                    <div className="text-xs text-ink-tertiary">Avg</div>
                   </div>
                 </div>
               </div>
@@ -299,7 +263,7 @@ function DemoPreviewSection() {
 
 function ForDevelopersSection() {
   return (
-    <section id="for-developers" className="py-20 px-6">
+    <section id="for-developers" className="py-12 px-6">
       <div className="max-w-5xl mx-auto">
         <div className="grid md:grid-cols-2 gap-12 items-start">
           <div>
@@ -407,7 +371,7 @@ function parseMcqBlocks(content: string) {
 
 function ForLearningEngineersSection() {
   return (
-    <section id="for-learning-engineers" className="py-20 px-6 bg-surface-secondary">
+    <section id="for-learning-engineers" className="py-12 px-6 bg-surface-secondary">
       <div className="max-w-5xl mx-auto">
         <div className="grid md:grid-cols-2 gap-12 items-start">
           {/* Data visualization mock */}
@@ -536,20 +500,23 @@ function ForLearningEngineersSection() {
 
 function VisionSection() {
   return (
-    <section className="py-20 px-6">
-      <div className="max-w-3xl mx-auto text-center">
-        <h2 className="text-3xl font-bold text-ink-primary mb-4">
+    <section className="py-12 px-6">
+      <div className="max-w-4xl mx-auto text-center">
+        <h2 className="text-2xl font-bold text-ink-primary mb-2">
           The bigger picture
         </h2>
-        <p className="text-lg text-ink-secondary mb-8">
-          LLMs are becoming primary learning tools for millions.
-          MCQMCP is infrastructure to measure whether they actually work.
+        <p className="text-ink-secondary mb-6">
+          LLMs are becoming primary learning tools. MCQMCP measures whether they actually work.
         </p>
 
-        <div className="bg-surface-secondary rounded-2xl p-8 text-left">
-          <blockquote className="text-lg text-ink-primary italic mb-4">
-            "We're flying blind—no standardized measurement of whether AI tutoring produces learning.
-            MCQMCP can be the infrastructure that makes human learning measurable in the LLM era."
+        {/* Value Loop Diagram */}
+        <div className="mb-8">
+          <ValueLoopDiagram />
+        </div>
+
+        <div className="bg-surface-secondary rounded-xl p-6 text-left max-w-2xl mx-auto">
+          <blockquote className="text-ink-primary italic mb-3">
+            "MCQMCP is infrastructure that makes human learning measurable in the LLM era."
           </blockquote>
           <div className="flex items-center gap-4">
             <a
@@ -558,7 +525,7 @@ function VisionSection() {
               rel="noopener noreferrer"
               className="text-sm text-claude font-medium hover:underline"
             >
-              Read the full vision →
+              Full vision →
             </a>
             <a
               href="https://github.com/JDerekLomas/claude-mcq-assessment/blob/main/ROADMAP.md"
@@ -566,7 +533,7 @@ function VisionSection() {
               rel="noopener noreferrer"
               className="text-sm text-ink-secondary hover:text-ink-primary"
             >
-              See the roadmap →
+              Roadmap →
             </a>
           </div>
         </div>
@@ -577,30 +544,29 @@ function VisionSection() {
 
 function CTASection() {
   return (
-    <section className="py-20 px-6 bg-claude">
+    <section className="py-12 px-6 bg-claude">
       <div className="max-w-3xl mx-auto text-center">
-        <h2 className="text-3xl font-bold text-white mb-4">
+        <h2 className="text-2xl font-bold text-white mb-3">
           Ready to see it in action?
         </h2>
-        <p className="text-lg text-white/80 mb-8">
-          The demo shows the full protocol flow—item retrieval, response logging,
-          and analytics—all visible in real-time.
+        <p className="text-white/80 mb-6">
+          Step through the full protocol flow in our interactive demo.
         </p>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link
             href="/demo"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-white text-claude font-medium rounded-full hover:bg-white/90 transition-all"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-white text-claude font-medium rounded-full hover:bg-white/90 transition-all"
           >
-            <Play size={18} />
+            <Play size={16} />
             Try the Demo
           </Link>
           <a
             href="https://github.com/JDerekLomas/claude-mcq-assessment"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-transparent text-white font-medium rounded-full border border-white/30 hover:bg-white/10 transition-all"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-transparent text-white font-medium rounded-full border border-white/30 hover:bg-white/10 transition-all"
           >
-            <GitBranch size={18} />
+            <GitBranch size={16} />
             Star on GitHub
           </a>
         </div>
@@ -611,19 +577,10 @@ function CTASection() {
 
 function Footer() {
   return (
-    <footer className="py-12 px-6 border-t border-edge-light">
+    <footer className="py-8 px-6 border-t border-edge-light">
       <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-claude flex items-center justify-center">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M12 2L12 22M2 12L22 12M4.93 4.93L19.07 19.07M19.07 4.93L4.93 19.07"
-                stroke="white"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            </svg>
-          </div>
+        <div className="flex items-center gap-2">
+          <LogoMark size={24} />
           <span className="text-ink-secondary text-sm">
             MCQMCP — Measure what matters
           </span>

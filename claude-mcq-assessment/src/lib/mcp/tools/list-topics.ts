@@ -20,6 +20,14 @@ const TOPIC_DESCRIPTIONS: Record<string, string> = {
   'js-timers': 'setTimeout, setInterval, and microtask/macrotask ordering',
   'js-patterns': 'Common JavaScript patterns: destructuring, spread, getters',
   'html-events': 'DOM events: bubbling, capturing, and delegation',
+  'vibe-prompting': 'Effective prompting techniques for AI code generation',
+  'vibe-review': 'Reviewing, validating, and debugging AI-generated code',
+  'vibe-workflow': 'Integrating AI coding assistants into development workflows',
+  'react-hooks': 'React hooks: useState, useEffect, useRef, useMemo, custom hooks',
+  'react-state': 'State management: lifting state, Context API, state updates',
+  'react-rendering': 'Re-renders, memoization, keys, and reconciliation',
+  'react-patterns': 'Common React patterns: composition, render props, HOCs',
+  'plasma-cells': 'Plasma cell biology: differentiation, antibody production, and immune function',
 };
 
 /**
