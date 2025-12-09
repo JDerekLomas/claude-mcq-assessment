@@ -23,22 +23,16 @@ export function Navigation() {
         {/* Nav Links */}
         <div className="hidden md:flex items-center gap-8">
           <Link
-            href="/#how-it-works"
+            href="/demo"
             className="text-sm text-ink-secondary hover:text-ink-primary transition-colors"
           >
-            How It Works
+            Demo
           </Link>
           <Link
-            href="/#for-developers"
+            href="/explorer"
             className="text-sm text-ink-secondary hover:text-ink-primary transition-colors"
           >
-            For Developers
-          </Link>
-          <Link
-            href="/#for-learning-engineers"
-            className="text-sm text-ink-secondary hover:text-ink-primary transition-colors"
-          >
-            For Learning Engineers
+            Item Explorer
           </Link>
           <a
             href="https://github.com/JDerekLomas/claude-mcq-assessment"
